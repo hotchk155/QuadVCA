@@ -680,11 +680,11 @@ design rules under a new name.</description>
 <attribute name="VALUE" x="14.478" y="69.215" size="1.27" layer="27"/>
 </element>
 <element name="SNK4" library="pinhead" package="1X01" value="" x="23.368" y="72.39" smashed="yes">
-<attribute name="NAME" x="23.4442" y="77.3938" size="1.27" layer="25" ratio="10" rot="R90"/>
+<attribute name="NAME" x="23.4442" y="86.2838" size="1.27" layer="25" ratio="10" rot="R90"/>
 <attribute name="VALUE" x="22.098" y="69.215" size="1.27" layer="27"/>
 </element>
 <element name="SNK5" library="pinhead" package="1X01" value="" x="23.368" y="69.85" smashed="yes">
-<attribute name="NAME" x="23.3172" y="86.9188" size="1.27" layer="25" ratio="10" rot="R90"/>
+<attribute name="NAME" x="23.4442" y="77.3938" size="1.27" layer="25" ratio="10" rot="R90"/>
 <attribute name="VALUE" x="22.098" y="66.675" size="1.27" layer="27"/>
 </element>
 <element name="SNK6" library="pinhead" package="1X01" value="" x="25.908" y="72.39" smashed="yes">
@@ -810,6 +810,7 @@ design rules under a new name.</description>
 <via x="71.12" y="63.5" extent="1-16" drill="1.1"/>
 <via x="70.993" y="53.848" extent="1-16" drill="1.1"/>
 <via x="71.12" y="44.45" extent="1-16" drill="1.1"/>
+<contactref element="IN1" pad="P$2"/>
 </signal>
 <signal name="N$2">
 <contactref element="ATT1" pad="B"/>
