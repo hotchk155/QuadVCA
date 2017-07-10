@@ -923,6 +923,11 @@ design rules under a new name.</description>
 <vertex x="68.326" y="76.327"/>
 <vertex x="7.874" y="76.327"/>
 </polygon>
+<contactref element="CK_IN" pad="P$2"/>
+<contactref element="CV1" pad="P$2"/>
+<contactref element="CV2" pad="P$2"/>
+<contactref element="CV3" pad="P$2"/>
+<contactref element="CV4" pad="P$2"/>
 </signal>
 <signal name="N$17">
 <contactref element="CK_IN" pad="P$1"/>
