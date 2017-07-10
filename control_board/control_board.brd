@@ -144,7 +144,7 @@
 <text x="62.992" y="72.644" size="1.016" layer="21" rot="R270">VCA</text>
 <text x="62.992" y="48.387" size="1.016" layer="21" rot="R270">TRG</text>
 <text x="62.865" y="57.912" size="1.016" layer="21" rot="R270">TRG</text>
-<text x="62.992" y="67.31" size="1.016" layer="21" rot="R270">VCA</text>
+<text x="62.992" y="67.31" size="1.016" layer="21" rot="R270">TRG</text>
 <text x="42.418" y="55.372" size="1.016" layer="21">CLK</text>
 <text x="46.99" y="55.499" size="1.016" layer="21">STA</text>
 </plain>
