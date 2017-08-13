@@ -2,6 +2,16 @@
 #include <memory.h>
 #include <eeprom.h>
 
+/*
+0x01 clk
+0x02 -
+0x04 -
+0x08 - trg 2
+0x10 - act
+0x20 - trg3
+0x40 trg4
+0x80 trg1
+*/		
 
 // CONFIG OPTIONS 
 // - RESET INPUT DISABLED
@@ -12,6 +22,7 @@
 #pragma CLOCK_FREQ 16000000
 
 #include "quadvca.h"
+
 
 /*
 		
@@ -28,48 +39,6 @@ RC6 / CCP4
 		
 */
 
-#define P_SRC1		latb.7		// active low enable for the first 7-segment display 
-#define P_SRC2		latc.7		// active low enable for the second 7-segment display 
-#define P_SRC3		latc.4		// active low enable for the third 7-segment display
-#define P_SRC4		latb.6		// active low enable for MCU driven panel LED indicators 
-
-#define P_SR_RCK	lata.5		// STORE clock
-#define P_SR_SCK	lata.4		// SHIFT clock
-#define P_SR_DAT 	P_SRC4		// Line is shared with one display source (active low)
-
-
-
-
-#define P_PWM1		latc.3
-#define P_PWM2		latc.6
-#define P_PWM3		lata.2
-#define P_PWM4		latc.5
-
-#define TRIS_PWM1		trisc.3
-#define TRIS_PWM2		trisc.6
-#define TRIS_PWM3		trisa.2
-#define TRIS_PWM4		trisc.5
-
-#define P_GATE1			portb.4	// AN10
-#define P_GATE2			portc.2 // AN6
-#define P_GATE3			portc.1 // AN5
-#define P_GATE4			portc.0 // AN4
-
-
-
-                        //76543210
-#define DEF_ANSELA		0b00000000
-#define DEF_ANSELB		0b00010000
-#define DEF_ANSELC		0b00000111
-
-
-					//76543210
-#define TRIS_A		0b11001111
-#define TRIS_B		0b00111111
-#define TRIS_C		0b01101111
-
-
-#define P_KB_READ		porta.1
 
 //
 // TYPE DEFS
@@ -89,6 +58,23 @@ volatile byte tick_flag = 0;
 									// interrupt fires once per ms
 
 
+enum {
+	DX_REFRESH_DISPLAY,
+	DX_BEGIN_KEYSCAN,
+	DX_KEYSCAN
+};
+volatile byte dx_state = DX_REFRESH_DISPLAY;
+volatile byte dx_disp = 0;
+volatile byte dx_mask = 0;
+volatile byte dx_key_state = 0;
+byte led_buf[4] = {0};
+//longhand full refresh
+// when called, the shift and store registers will be filled with 1's
+volatile byte key_state = 0;
+#define TIMER_INIT_DISPLAY_HOLD 	150
+#define TIMER_INIT_KEY_SETTLE		254
+
+
 ////////////////////////////////////////////////////////////
 // INTERRUPT HANDLER CALLED WHEN CHARACTER RECEIVED AT 
 // SERIAL PORT OR WHEN TIMER 1 OVERLOWS
@@ -101,6 +87,139 @@ void interrupt( void )
 		tmr0 = TIMER_0_INIT_SCALAR;
 		tick_flag = 1;
 		intcon.2 = 0;
+	}
+
+	if(pir1.0) // Timer 1 interrupt
+	{
+		pir1.0 = 0;
+		switch(dx_state) 
+		{
+		
+		/////////////////////////////////////////////////////
+		case DX_REFRESH_DISPLAY:
+			// Load shift reg content to outputs, disabling
+			// all sink lines and turning off the display
+			P_SR_RCK = 0;
+			P_SR_RCK = 1;	
+		
+			// Load shift register
+			byte d = led_buf[dx_disp];
+			byte m = 0x80;
+			while(m) {
+				P_SR_SCK = 0;
+				P_SR_DAT = !(d&m);
+				P_SR_SCK = 1;
+				m>>=1;
+			}
+			
+			// Ensure all source lines are disabled
+			P_SRC1 = 1;
+			P_SRC2 = 1;
+			P_SRC3 = 1;
+			P_SRC4 = 1;
+					
+			// Now actually load the SR outputs and load the display
+			// data to the LEDs
+			P_SR_RCK = 0;
+			P_SR_RCK = 1;	
+			
+			// fill the shift register with high bits ready to
+			// disable all (active low) sink lines
+			P_SR_SCK = 0; P_SR_SCK = 1;
+			P_SR_SCK = 0; P_SR_SCK = 1;
+			P_SR_SCK = 0; P_SR_SCK = 1;
+			P_SR_SCK = 0; P_SR_SCK = 1;
+			P_SR_SCK = 0; P_SR_SCK = 1;
+			P_SR_SCK = 0; P_SR_SCK = 1;
+			P_SR_SCK = 0; P_SR_SCK = 1;
+			P_SR_SCK = 0; P_SR_SCK = 1;
+			
+			// enable the appropriate display source driver. At this point
+			// all SR outputs should be HIGH
+			switch(dx_disp) {		
+				case 0: P_SRC1 = 0; break;
+				case 1: P_SRC2 = 0; break;
+				case 2: P_SRC3 = 0; break;
+				case 3: P_SRC4 = 0; break;
+			}
+			
+			// prepare for next display
+			if(++dx_disp >= 4) {
+				dx_state = DX_BEGIN_KEYSCAN;
+				dx_disp = 0; 
+			}
+			// set next timer interrupt after display on time
+			//****
+			tmr1h = TIMER_INIT_DISPLAY_HOLD;
+			break;
+					
+		/////////////////////////////////////////////////////
+		case DX_BEGIN_KEYSCAN:
+			// Load shift reg content to outputs, disabling
+			// all sink lines and turning off the display
+			P_SR_RCK = 0;
+			P_SR_RCK = 1;	
+		
+			// clear key status buffer
+			dx_key_state = 0;
+			wpua = 0b00001010;
+		
+			// Clock a single zero bit into shift register and set 
+			// data line high again
+			P_SR_DAT = 0;
+			P_SR_SCK = 0;
+			P_SR_SCK = 1;	
+			P_SR_DAT = 1;
+		
+			// copy shift reg to store reg
+			P_SR_RCK=0; P_SR_RCK=1;
+	
+			// prepare to scan keys
+			dx_mask = 0x80;
+			dx_state = DX_KEYSCAN;
+			
+			// next tick after key settle time
+			//****
+			tmr1h = TIMER_INIT_KEY_SETTLE;
+			break;
+			
+		/////////////////////////////////////////////////////
+		case DX_KEYSCAN:	
+		
+			// check the scan line
+			if(!P_KB_READ) {
+				dx_key_state |= dx_mask;
+			}
+			
+			// shift enable bit along
+			P_SR_SCK = 0; P_SR_SCK = 1;			
+			
+			// present at outputs
+			P_SR_RCK=0; P_SR_RCK=1;
+			
+			// move the scan bit along
+			dx_mask >>= 1;
+			
+			if(!dx_mask) {
+				// scan is complete, last job is to check 
+				// the direct;y read switch
+				if(!P_SWITCH) {
+					dx_key_state |= 0x20;
+				}
+				
+				// turn off pull ups
+				wpua = 0b00000000;
+				
+				// back to display refresh mode
+				key_state = dx_key_state;
+				dx_state = DX_REFRESH_DISPLAY;
+			}
+			// next tick after key settle time
+			//****
+			tmr1h = TIMER_INIT_KEY_SETTLE;
+			break;
+		}	
+		
 	}
 
 	// timer 1 rollover ISR. Responsible for timing
@@ -176,12 +295,14 @@ void init_usart()
 
 
 
-// when called, the shift and store registers will be filled with 1's
-byte key_state = 0;
+
+
+
+/*
 void scan_keys()
 {
 	key_state = 0;
-	wpua = 0b00000010;
+	wpua = 0b00001010;
 	
 	// Clock a single zero bit into shift register and set 
 	// data line high again
@@ -208,101 +329,103 @@ delay_us(100);
 	
 	// now shift reg is cleared, move to store reg
 	P_SR_RCK=0; P_SR_RCK=1;
+	
+	if(!P_SWITCH) {
+		key_state |= 0x20;
+	}
 	wpua = 0b00000000;
 	
 }
+*/
 
-void load_sr(byte d)
+void init_display() {
+	// set all source lines high to turn off display
+	// (also sets SR input line high)
+	P_SRC1 = 1; 
+	P_SRC2 = 1; 
+	P_SRC3 = 1; 
+	P_SRC4 = 1; //P_SR_DAT = 1;
+	
+	// clock in eight HIGH bits to shift reg, to turn off 
+	// all (active LOW) outputs
+	P_SR_SCK = 0; P_SR_SCK = 1;
+	P_SR_SCK = 0; P_SR_SCK = 1;
+	P_SR_SCK = 0; P_SR_SCK = 1;
+	P_SR_SCK = 0; P_SR_SCK = 1;
+	P_SR_SCK = 0; P_SR_SCK = 1;
+	P_SR_SCK = 0; P_SR_SCK = 1;
+	P_SR_SCK = 0; P_SR_SCK = 1;
+	P_SR_SCK = 0; P_SR_SCK = 1;
+	
+	// and load data to SR output pins
+	P_SR_RCK = 0;
+	P_SR_RCK = 1;		
+}
+
+/*
+void refresh_display()
 {
+	for(byte i=0; i<4; ++i) 
+	{
+		//byte d = CHAR_1;
+		
+		// Load shift register
+		byte d = led_buf[i];
+		byte m = 0x80;
+		while(m) {
+			P_SR_SCK = 0;
+			P_SR_DAT = !(d&m);
+			P_SR_SCK = 1;
+			m>>=1;
+		}
+		
+		// Ensure all source lines are disabled
+		P_SRC1 = 1;
+		P_SRC2 = 1;
+		P_SRC3 = 1;
+		P_SRC4 = 1;
+				
+		// Now actually load the SR outputs and load the display
+		// data to the LEDs
+		P_SR_RCK = 0;
+		P_SR_RCK = 1;	
+		
+		// fill the shift register with high bits ready to
+		// disable all (active low) sink lines
+		P_SR_SCK = 0; P_SR_SCK = 1;
+		P_SR_SCK = 0; P_SR_SCK = 1;
+		P_SR_SCK = 0; P_SR_SCK = 1;
+		P_SR_SCK = 0; P_SR_SCK = 1;
+		P_SR_SCK = 0; P_SR_SCK = 1;
+		P_SR_SCK = 0; P_SR_SCK = 1;
+		P_SR_SCK = 0; P_SR_SCK = 1;
+		P_SR_SCK = 0; P_SR_SCK = 1;
+		
+		// enable the appropriate display source driver. At this point
+		// all SR outputs should be HIGH
+		switch(i) {		
+			case 0: P_SRC1 = 0; break;
+			case 1: P_SRC2 = 0; break;
+			case 2: P_SRC3 = 0; break;
+			case 3: P_SRC4 = 0; break;
+		}
+		
+		// 
+		delay_ms(1);
 
-	// Load shift register
-	byte m = 0x80;
-	while(m) {
-		P_SR_SCK = 0;
-		P_SR_DAT = !!(d&m);
-		P_SR_SCK = 1;
-		m>>=1;
+		// Load shift reg content to outputs, disabling
+		// all sink lines and turning off the display
+		P_SR_RCK = 0;
+		P_SR_RCK = 1;	
 	}
-	
-	// Set data line high (which also disables the diplay source 
-	// sharing enable line with the data line)
-	P_SR_DAT = 1;
-	// enable the appropriate display souce
-	P_SRC1 = 0;
-	
-	// Load shift reg content to outputs
-	P_SR_RCK = 0;
-	P_SR_RCK = 1;	
-
-
-	// fill the shift register with high bits
-	P_SR_SCK = 0; P_SR_SCK = 1;
-	P_SR_SCK = 0; P_SR_SCK = 1;
-	P_SR_SCK = 0; P_SR_SCK = 1;
-	P_SR_SCK = 0; P_SR_SCK = 1;
-	P_SR_SCK = 0; P_SR_SCK = 1;
-	P_SR_SCK = 0; P_SR_SCK = 1;
-	P_SR_SCK = 0; P_SR_SCK = 1;
-	P_SR_SCK = 0; P_SR_SCK = 1;
-	
-	// 
-	delay_ms(2);
-	
-	// Load shift reg content to outputs
-	P_SR_RCK = 0;
-	P_SR_RCK = 1;	
-	
-	// Turn off all display
-	P_SRC1 = 1;
-	P_SRC2 = 1;
-	P_SRC3 = 1;
-	P_SRC4 = 1;
-	
 }
-
-/*
-	 AAA
-    F   B
-     GGG     
-    E   C
-     DDD
 */
-enum {
-	SEG_A  = 0x10,
-	SEG_B  = 0x80,
-	SEG_C  = 0x02,
-	SEG_D  = 0x20,
-	SEG_E  = 0x08,
-	SEG_F  = 0x40,
-	SEG_G  = 0x04,
-	SEG_DP = 0x01
-};
 
-enum {
-	CHAR_0	= SEG_A|SEG_B|SEG_C|SEG_D|SEG_E|SEG_F,
-	CHAR_1	= SEG_B|SEG_C,
-	CHAR_2	= SEG_A|SEG_B|SEG_D|SEG_E|SEG_G,
-	CHAR_3	= SEG_A|SEG_B|SEG_C|SEG_D|SEG_G,
-	CHAR_4	= SEG_B|SEG_C|SEG_F|SEG_G,
-	CHAR_5	= SEG_A|SEG_C|SEG_D|SEG_F|SEG_G,
-	CHAR_6	= SEG_A|SEG_C|SEG_D|SEG_E|SEG_F|SEG_G,
-	CHAR_7	= SEG_A|SEG_B|SEG_C,
-	CHAR_8	= SEG_A|SEG_B|SEG_C|SEG_D|SEG_E|SEG_F|SEG_G,
-	CHAR_9	= SEG_A|SEG_B|SEG_C|SEG_D|SEG_F|SEG_G
-};
-byte led_seg1=CHAR_9;
-byte led_seg2=0;
-byte led_seg3=0;
 
-/*
-	SR data line shared with a SRC enable line
+
 	
-	when SR is being loaded, output content must be 0xFF
-	
-*/
-void refresh_display() {
-	load_sr(~led_seg1);
-}
+
+
 
 
 void init() {
@@ -448,44 +571,45 @@ are set to ‘1x’. The SCS bits must be set
 	intcon.5 = 1; 	  // enabled timer 0 interrrupt
 	intcon.2 = 0;     // clear interrupt fired flag
 	
+	
+	// Configure timer 1 
+	// instruction clock (8MHz, 8x prescaler = 1MHz)	
+	t1con = 0b00000001;
+	pie1.0 = 1; // enable timer1 overflow
+	pir1.0 = 0; // clear interrupt flag
+	
+	
 	// enable interrupts	
 	intcon.7 = 1; //GIE
 	intcon.6 = 1; //PEIE
 		
 		
 	init();
+	init_display();
 		
 	// main app loop
 	unsigned int d = 0;
 	byte q=0;
-	
+
+	byte last_key_state = 0;
 	
 	while(1) {
-//		if(++d>1023) d=0;
-//		set_vca(VCA4,d);
-	//	set_vca(1,d);
-	//	set_vca(2,d);
-	//	set_vca(3,d);
-//		delay_ms(1);
-	
-//		refresh_display();
-//		scan_keys();
-//		led_seg1 = key_state;
-		//delay_us(250);
-		//run_adc();
-		//tick_flag = 0;
-		//while(!tick_flag);
-		
 		adc_run();
-		//set_vca(0, adc_result[0]);
-		
 		if(tick_flag) {
 			tick_flag = 0;
-			//	chan_run(0, &g_chan[0]);
 			for(byte i=0; i<4; ++i) {
 				chan_run(i, &g_chan[i]);
 			}
 		}
+	
+		// check for any change to key statuses
+		byte delta = key_state & last_key_state;		
+		if(delta & key_state) { // Key is pressed
+			ui_keypress(delta & key_state, key_state);
+		}
+		last_key_state = key_state;
+		
+		
 	}
 }
 

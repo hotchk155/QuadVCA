@@ -1,4 +1,6 @@
 #include "quadvca.h"
+
+
 void chan_run(byte which, VCA_CHANNEL *chan) {
 	byte *cv_in = &adc_cv_state[which];
 	if(*cv_in & ADC_CV_RISING_EDGE) {
@@ -15,3 +17,18 @@ void chan_run(byte which, VCA_CHANNEL *chan) {
 void chan_init(VCA_CHANNEL *chan) {
 	env_init(&chan->env);
 }
+
+void chan_set(VCA_CHANNEL *chan, byte param, byte value) {
+	switch(param) {
+		case P_ATTACK:
+			chan->attack = value;
+			break;
+		case P_SUSTAIN:
+			chan->sustain  = value;
+			break;
+		case P_RELEASE:
+			chan->release  = value;
+			break;
+	}	
+};
+
