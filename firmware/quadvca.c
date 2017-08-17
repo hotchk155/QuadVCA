@@ -442,6 +442,13 @@ void main()
 
 	byte last_key_state = 0;
 	
+	for(;;) {
+		for(int i=0; i<255; i+=64) {
+			vca_set(0, i);
+			delay(10);
+		}
+	}
+	
 	while(1) {
 		adc_run();
 		if(tick_flag) {

@@ -79,8 +79,8 @@ void chan_run(byte which) {
 			l = (long)chan->env_value - chan->env_release;
 			if(l <= 0) {
 				chan->env_value = 0;
-				chan->env_state = ENV_ST_ATTACK;
-				//chan->env_state = ENV_ST_IDLE;
+				//chan->env_state = ENV_ST_ATTACK;
+				chan->env_state = ENV_ST_IDLE;
 			}
 			else {
 				chan->env_value = (ENV_COUNTER)l;
