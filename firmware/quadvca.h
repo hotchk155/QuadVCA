@@ -1,3 +1,69 @@
+
+
+
+enum {
+	P_ATTACK,
+	P_SUSTAIN,
+	P_RELEASE,
+	
+	P_FIRST = P_ATTACK,
+	P_LAST = P_RELEASE
+	
+};
+
+typedef unsigned char byte;
+typedef unsigned int ENV_COUNTER;
+enum {
+	ENV_ST_IDLE,
+	ENV_ST_ATTACK,
+	ENV_ST_SUSTAIN,
+	ENV_ST_RELEASE
+};
+
+enum {
+	ENV_MODE_AR,
+	ENV_MODE_ASR
+};
+
+typedef struct {
+	byte env_mode;
+	byte env_state;
+	ENV_COUNTER env_value;	
+	ENV_COUNTER env_attack; 
+	ENV_COUNTER env_release; 	
+} CHAN_STATE;
+
+typedef struct {
+	byte attack;
+	byte sustain;
+	byte release;
+	byte dummy;
+} CHAN_CFG;
+
+extern CHAN_STATE g_chan[4];
+extern CHAN_CFG g_chan_cfg[4];
+extern unsigned int adc_cv_result[4];
+extern byte adc_cv_state[4];
+extern byte led_buf[4];
+
+
+// CHANNELS
+void chan_trig(byte which);
+void chan_untrig(byte which);
+void chan_run(byte which);
+void chan_init(byte which);
+void chan_set(byte which, byte param, byte value);
+byte chan_get(byte which, byte param);
+
+void ui_notify(byte key, byte modifiers);
+void ui_run();
+
+void adc_run();
+void vca_set(byte which, unsigned int level);
+
+
+
+
 #define P_SRC1		latb.7		// active low enable for the first 7-segment display 
 #define P_SRC2		latc.7		// active low enable for the second 7-segment display 
 #define P_SRC3		latc.4		// active low enable for the third 7-segment display
@@ -42,7 +108,6 @@
 #define P_KB_READ		porta.1
 
 
-typedef unsigned char byte;
 
 enum {
 	LED_CLK		= 0x01,
@@ -133,12 +198,6 @@ enum {
 	ADC_CV_FALLING_EDGE			= 0x08
 };
 
-enum {
-	P_NONE,
-	P_ATTACK,
-	P_SUSTAIN,
-	P_RELEASE
-};
 
 /*
 Buttons: bits that show up in key_state
@@ -166,48 +225,4 @@ enum {
 };
 
 
-extern unsigned int adc_cv_result[4];
-extern byte adc_cv_state[4];
-extern byte led_buf[4];
-void ui_keypress(byte key, byte modifiers);
 
-void ui_led(byte which, byte on);
-
-void adc_run();
-void vca_set(byte which, unsigned int level);
-
-
-typedef unsigned int ENV_COUNTER;
-enum {
-	ENV_ST_IDLE,
-	ENV_ST_ATTACK,
-	ENV_ST_SUSTAIN,
-	ENV_ST_RELEASE
-};
-enum {
-	ENV_MODE_AR,
-	ENV_MODE_ASR
-};
-typedef struct {
-	byte mode;
-	byte state;
-	ENV_COUNTER value;	
-	ENV_COUNTER attack; 
-	ENV_COUNTER release; 	
-} ENVELOPE;
-
-typedef struct {
-	ENVELOPE env;
-	byte attack;
-	byte sustain;
-	byte release;
-} VCA_CHANNEL;
-
-void chan_init(VCA_CHANNEL *chan);
-void chan_run(byte which, VCA_CHANNEL *chan);
-
-#define ENV_VALUE(env) ((ENV_COUNTER)(((env)->value) >> 6))
-void env_init(ENVELOPE *env);
-void env_run(ENVELOPE *env);
-void env_trig(ENVELOPE *env);
-void env_untrig(ENVELOPE *env);

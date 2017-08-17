@@ -1,17 +1,13 @@
+////////////////////////////////////////////////////////////////
+//
+
+//
+// INCLUDE FILES
+//
 #include <system.h>
 #include <memory.h>
 #include <eeprom.h>
-
-/*
-0x01 clk
-0x02 -
-0x04 -
-0x08 - trg 2
-0x10 - act
-0x20 - trg3
-0x40 trg4
-0x80 trg1
-*/		
+#include "quadvca.h"
 
 // CONFIG OPTIONS 
 // - RESET INPUT DISABLED
@@ -21,7 +17,6 @@
 #pragma DATA _CONFIG2, _WRT_OFF & _PLLEN_ON & _STVREN_ON & _BORV_19 & _LVP_OFF
 #pragma CLOCK_FREQ 16000000
 
-#include "quadvca.h"
 
 
 /*
@@ -41,45 +36,38 @@ RC6 / CCP4
 
 
 //
-// TYPE DEFS
-//
-
-
-//
 // GLOBAL DATA
 //
-VCA_CHANNEL g_chan[4];
+byte led_buf[4] = {0};
 
-unsigned int vca_level[4] = {0};
-
-volatile byte tick_flag = 0;
+//
+// FILE SCOPE DATA
+//
 #define TIMER_0_INIT_SCALAR		5	// Timer 0 is an 8 bit timer counting at 250kHz
 									// using this init scalar means that rollover
 									// interrupt fires once per ms
+static volatile byte tick_flag = 0; // flag set when millsecond interrupt fires
 
 
-enum {
-	DX_REFRESH_DISPLAY,
-	DX_BEGIN_KEYSCAN,
-	DX_KEYSCAN
-};
-volatile byte dx_state = DX_REFRESH_DISPLAY;
-volatile byte dx_disp = 0;
-volatile byte dx_mask = 0;
-volatile byte dx_key_state = 0;
-byte led_buf[4] = {0};
-//longhand full refresh
-// when called, the shift and store registers will be filled with 1's
-volatile byte key_state = 0;
-#define TIMER_INIT_DISPLAY_HOLD 	150
-#define TIMER_INIT_KEY_SETTLE		254
+// definitions for the display update state machine
+#define DX_REFRESH_DISPLAY 			0
+#define DX_BEGIN_KEYSCAN			1
+#define DX_KEYSCAN			 		2
+#define TIMER_INIT_DISPLAY_HOLD 	200	// display hold time (255 - timer1 ticks)
+#define TIMER_INIT_KEY_SETTLE		254 // key input settle time (255 - timer1 ticks)
+static volatile byte dx_state;
+static volatile byte dx_disp;
+static volatile byte dx_mask;
+static volatile byte dx_key_state;
+static volatile byte key_state = 0;
+
 
 
 ////////////////////////////////////////////////////////////
-// INTERRUPT HANDLER CALLED WHEN CHARACTER RECEIVED AT 
-// SERIAL PORT OR WHEN TIMER 1 OVERLOWS
+// INTERRUPT HANDLER 
 void interrupt( void )
 {
+	////////////////////////////////////////////////////////////
 	// timer 0 rollover ISR. Maintains the count of 
 	// "system ticks" that we use for key debounce etc
 	if(intcon.2)
@@ -89,7 +77,11 @@ void interrupt( void )
 		intcon.2 = 0;
 	}
 
-	if(pir1.0) // Timer 1 interrupt
+	////////////////////////////////////////////////////////////
+	// Timer 1 interrupt
+	// This interrupt drives the state machine that updates the 
+	// LED displays
+	if(pir1.0) 
 	{
 		pir1.0 = 0;
 		switch(dx_state) 
@@ -221,16 +213,6 @@ void interrupt( void )
 		}	
 		
 	}
-
-	// timer 1 rollover ISR. Responsible for timing
-	// the tempo of the MIDI clock
-/*	if(pir1.0)
-	{
-		tmr1l=(timer_init_scalar & 0xff); 
-		tmr1h=(timer_init_scalar>>8); 
-		tick_flag = 1;
-		pir1.0 = 0;
-	}*/
 		
 /*	// serial rx ISR
 	if(pir1.5)
@@ -293,51 +275,8 @@ void init_usart()
 */
 
 
-
-
-
-
-
-/*
-void scan_keys()
-{
-	key_state = 0;
-	wpua = 0b00001010;
-	
-	// Clock a single zero bit into shift register and set 
-	// data line high again
-	P_SR_DAT = 0;
-	P_SR_SCK = 0;
-	P_SR_SCK = 1;	
-	P_SR_DAT = 1;
-	
-	byte m = 0x80;
-	while(m) {
-	
-		// copy shift reg to store reg
-		P_SR_RCK=0; P_SR_RCK=1;
-
-delay_us(100);				
-		if(!P_KB_READ) {
-			key_state |= m;
-		}
-		
-		// shift enable bit along
-		P_SR_SCK = 0; P_SR_SCK = 1;			
-		m>>=1;
-	}
-	
-	// now shift reg is cleared, move to store reg
-	P_SR_RCK=0; P_SR_RCK=1;
-	
-	if(!P_SWITCH) {
-		key_state |= 0x20;
-	}
-	wpua = 0b00000000;
-	
-}
-*/
-
+////////////////////////////////////////////////////////////
+// INTERRUPT HANDLER 
 void init_display() {
 	// set all source lines high to turn off display
 	// (also sets SR input line high)
@@ -360,116 +299,22 @@ void init_display() {
 	// and load data to SR output pins
 	P_SR_RCK = 0;
 	P_SR_RCK = 1;		
+
+	dx_state = DX_REFRESH_DISPLAY;
+	dx_disp = 0;
+	dx_mask = 0;
+	dx_key_state = 0;
 }
 
-/*
-void refresh_display()
-{
-	for(byte i=0; i<4; ++i) 
-	{
-		//byte d = CHAR_1;
-		
-		// Load shift register
-		byte d = led_buf[i];
-		byte m = 0x80;
-		while(m) {
-			P_SR_SCK = 0;
-			P_SR_DAT = !(d&m);
-			P_SR_SCK = 1;
-			m>>=1;
-		}
-		
-		// Ensure all source lines are disabled
-		P_SRC1 = 1;
-		P_SRC2 = 1;
-		P_SRC3 = 1;
-		P_SRC4 = 1;
-				
-		// Now actually load the SR outputs and load the display
-		// data to the LEDs
-		P_SR_RCK = 0;
-		P_SR_RCK = 1;	
-		
-		// fill the shift register with high bits ready to
-		// disable all (active low) sink lines
-		P_SR_SCK = 0; P_SR_SCK = 1;
-		P_SR_SCK = 0; P_SR_SCK = 1;
-		P_SR_SCK = 0; P_SR_SCK = 1;
-		P_SR_SCK = 0; P_SR_SCK = 1;
-		P_SR_SCK = 0; P_SR_SCK = 1;
-		P_SR_SCK = 0; P_SR_SCK = 1;
-		P_SR_SCK = 0; P_SR_SCK = 1;
-		P_SR_SCK = 0; P_SR_SCK = 1;
-		
-		// enable the appropriate display source driver. At this point
-		// all SR outputs should be HIGH
-		switch(i) {		
-			case 0: P_SRC1 = 0; break;
-			case 1: P_SRC2 = 0; break;
-			case 2: P_SRC3 = 0; break;
-			case 3: P_SRC4 = 0; break;
-		}
-		
-		// 
-		delay_ms(1);
-
-		// Load shift reg content to outputs, disabling
-		// all sink lines and turning off the display
-		P_SR_RCK = 0;
-		P_SR_RCK = 1;	
-	}
-}
-*/
-
-
-
-	
-
-
-
-
-void init() {
-	for(byte i=0; i<4; ++i) {
-		chan_init(&g_chan[i]);
-	}
-}
 ////////////////////////////////////////////////////////////
 // MAIN
 void main()
 { 
 	int i;
 	
-/*	
-The Internal Oscillator Block can be used with the 4X
-PLL associated with the External Oscillator Block to
-produce a 32 MHz internal system clock source. The
-following settings are required to use the 32 MHz internal
-clock source:
-• The FOSC bits in Configuration Word 1 must be
-set to use the INTOSC source as the device system
-clock (FOSC<2:0> = 100).
-• The SCS bits in the OSCCON register must be
-cleared to use the clock determined by
-FOSC<2:0> in Configuration Word 1
-(SCS<1:0> = 00).
-• The IRCF bits in the OSCCON register must be
-set to the 8 MHz HFINTOSC set to use
-(IRCF<3:0> = 1110).
-• The SPLLEN bit in the OSCCON register must be
-set to enable the 4xPLL, or the PLLEN bit of the
-Configuration Word 2 must be programmed to a
-‘1’.
-The 4xPLL is not available for use with the internal
-oscillator when the SCS bits of the OSCCON register
-are set to ‘1x’. The SCS bits must be set	
-*/
-	
 	// set to 32MHz clock (also requires specific CONFIG1 and CONFIG2 settings)
 	osccon = 0b11110000;
 
-        // osc control / 16MHz / internal
-        //osccon = 0b01111010;
-		
 	trisa = TRIS_A;
 	trisb = TRIS_B;
 	trisc = TRIS_C;
@@ -584,7 +429,11 @@ are set to ‘1x’. The SCS bits must be set
 	intcon.6 = 1; //PEIE
 		
 		
-	init();
+	chan_init(0);
+	chan_init(1);
+	chan_init(2);
+	chan_init(3);
+	
 	init_display();
 		
 	// main app loop
@@ -598,14 +447,15 @@ are set to ‘1x’. The SCS bits must be set
 		if(tick_flag) {
 			tick_flag = 0;
 			for(byte i=0; i<4; ++i) {
-				chan_run(i, &g_chan[i]);
+				chan_run(i);
 			}
+			ui_run();
 		}
 	
 		// check for any change to key statuses
-		byte delta = key_state & last_key_state;		
+		byte delta = key_state ^ last_key_state;		
 		if(delta & key_state) { // Key is pressed
-			ui_keypress(delta & key_state, key_state);
+			ui_notify(delta & key_state, key_state);
 		}
 		last_key_state = key_state;
 		
