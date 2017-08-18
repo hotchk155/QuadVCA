@@ -120,6 +120,18 @@ static byte ui_mode_edit_chan(byte key, byte modifiers) {
 			led_buf[0] = CHAR_R;
 			led_buf[1] = CHAR_L|SEG_DP;
 			break;
+		case P_HOLD:
+			led_buf[0] = CHAR_H;
+			led_buf[1] = CHAR_L|SEG_DP;
+			break;
+		case P_REPEAT:
+			led_buf[0] = CHAR_R;
+			led_buf[1] = CHAR_P|SEG_DP;
+			break;
+		case P_DENSITY:
+			led_buf[0] = CHAR_D;
+			led_buf[1] = CHAR_N|SEG_DP;
+			break;
 	}
 	value = chan_get(chan, cur_param);
 	led_buf[2] = digit_2_disp[value];
@@ -148,7 +160,7 @@ void ui_notify(byte key, byte modifiers) {
 
 
 // to be called once every 1 ms 
-void ui_run() {
+void ui_tick() {
 
 	byte d = 0;
 	// deal with LEDs that have been switched on for a 

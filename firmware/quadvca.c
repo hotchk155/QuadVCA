@@ -4,9 +4,6 @@
 //
 // INCLUDE FILES
 //
-#include <system.h>
-#include <memory.h>
-#include <eeprom.h>
 #include "quadvca.h"
 
 // CONFIG OPTIONS 
@@ -370,11 +367,6 @@ void main()
 	// load timer 2 period register for 255 duty cycles	
 	pr2 = 0xFF; 
 	
-	vca_set(VCA1,VCA_CLOSED);
-	vca_set(VCA2,VCA_CLOSED);
-	vca_set(VCA3,VCA_CLOSED);
-	vca_set(VCA4,VCA_CLOSED);
-	
 	
 	// clear Timer2 interrupt flag
 	pir1.1 = 0;
@@ -429,34 +421,35 @@ void main()
 	intcon.6 = 1; //PEIE
 		
 		
-	chan_init(0);
-	chan_init(1);
-	chan_init(2);
-	chan_init(3);
+	chan_init();
 	
 	init_display();
 		
 	// main app loop
 	unsigned int d = 0;
-	byte q=0;
+	//byte q=0;
 
 	byte last_key_state = 0;
 	
-	for(;;) {
-		for(int i=0; i<255; i+=64) {
-			vca_set(0, i);
-			delay(10);
-		}
-	}
-	
+//	vca_set(VCA1,100);
+//	for(;;) {
+//	}
+//	chan_trig(0);
+
+int q=0;
 	while(1) {
 		adc_run();
+		chan_monitor();
 		if(tick_flag) {
 			tick_flag = 0;
-			for(byte i=0; i<4; ++i) {
-				chan_run(i);
-			}
-			ui_run();
+			chan_tick();
+			ui_tick();
+			
+			//if(!q) {
+			//	q=1000;
+			//	chan_trig(3);
+			//}
+			//--q;
 		}
 	
 		// check for any change to key statuses

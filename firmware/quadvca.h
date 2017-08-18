@@ -1,47 +1,26 @@
 
+#include <system.h>
+#include <memory.h>
 
 
 enum {
+	P_RELEASE,
 	P_ATTACK,
 	P_SUSTAIN,
-	P_RELEASE,
+	P_HOLD,
+	P_REPEAT,
+	P_DENSITY,
 	
-	P_FIRST = P_ATTACK,
-	P_LAST = P_RELEASE
+	P_FIRST = P_RELEASE,
+	P_LAST = P_DENSITY
 	
 };
 
+#define CHAN_MAX 4
 typedef unsigned char byte;
-typedef unsigned int ENV_COUNTER;
-enum {
-	ENV_ST_IDLE,
-	ENV_ST_ATTACK,
-	ENV_ST_SUSTAIN,
-	ENV_ST_RELEASE
-};
+typedef unsigned int word;
 
-enum {
-	ENV_MODE_AR,
-	ENV_MODE_ASR
-};
 
-typedef struct {
-	byte env_mode;
-	byte env_state;
-	ENV_COUNTER env_value;	
-	ENV_COUNTER env_attack; 
-	ENV_COUNTER env_release; 	
-} CHAN_STATE;
-
-typedef struct {
-	byte attack;
-	byte sustain;
-	byte release;
-	byte dummy;
-} CHAN_CFG;
-
-extern CHAN_STATE g_chan[4];
-extern CHAN_CFG g_chan_cfg[4];
 extern unsigned int adc_cv_result[4];
 extern byte adc_cv_state[4];
 extern byte led_buf[4];
@@ -50,16 +29,16 @@ extern byte led_buf[4];
 // CHANNELS
 void chan_trig(byte which);
 void chan_untrig(byte which);
-void chan_run(byte which);
-void chan_init(byte which);
+void chan_tick();
+void chan_monitor();
+void chan_init();
 void chan_set(byte which, byte param, byte value);
 byte chan_get(byte which, byte param);
 
 void ui_notify(byte key, byte modifiers);
-void ui_run();
+void ui_tick();
 
 void adc_run();
-void vca_set(byte which, unsigned int level);
 
 
 
@@ -178,7 +157,7 @@ enum {
 	CHAR_Z	= SEG_A|SEG_B|SEG_D|SEG_E|SEG_G
 	
 };
-
+/*
 enum {
 	VCA1,
 	VCA2,
@@ -187,10 +166,10 @@ enum {
 };
 
 enum {
-	VCA_CLOSED = 0,
+	VCA_CLOSED = 400, // value we consider as closed VCA
 	VCA_OPEN = 1023
 };
-
+*/
 enum {
 	ADC_CV_RESULT 				= 0x01,	// set whenever there is a new result for input in adc_cv_result
 	ADC_CV_HIGH					= 0x02, 
