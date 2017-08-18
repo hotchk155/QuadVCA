@@ -303,6 +303,89 @@ void init_display() {
 	dx_key_state = 0;
 }
 
+////////////////////////////////////////////////////////////////
+// RUN ONE SHOT MODE
+void run_oneshot() {
+	// edge detection on CV inputs
+	for(byte i=0; i<CHAN_MAX; ++i) {
+		byte *cv_in = &adc_cv_state[i];
+		if(*cv_in & ADC_CV_RISING_EDGE) {
+			*cv_in &= ~ADC_CV_RISING_EDGE;
+			// handle a trigger
+			chan_trig(i);
+		}
+		else if(*cv_in & ADC_CV_FALLING_EDGE) {
+			*cv_in &= ~ADC_CV_FALLING_EDGE;
+			// handle an untrigger
+			chan_untrig(i);
+		}	
+	}
+}
+
+void run_crossfade_cv() {
+	if(adc_cv_state[0] & ADC_CV_RESULT) {
+		adc_cv_state[0] &= ~ADC_CV_RESULT;
+		byte vca[4];
+		vca[0] = 0;
+		vca[1] = 0;
+		vca[2] = 0;
+		vca[3] = 0;
+		byte x = (byte)adc_cv_result[0];	
+		if(adc_cv_result[0] < 128) {
+			vca[0] = 255;			
+		}
+		else if(adc_cv_result[0] < 384) {
+			vca[0] = 384-x;			
+			vca[1] = x - 128;			
+		}
+		else if(adc_cv_result[0] < 640) {
+			vca[1] = 384-x;			
+			vca[2] = x - 128;			
+		}
+		else if(adc_cv_result[0] < 896) {
+			vca[2] = 384-x;			
+			vca[3] = x - 128;			
+		}
+		else {
+			vca[3] = 255;			
+		}
+		chan_vca(0, ((word)vca[0])<<8);
+		chan_vca(1, ((word)vca[1])<<8);
+		chan_vca(2, ((word)vca[2])<<8);
+		chan_vca(3, ((word)vca[3])<<8);
+	}
+}
+
+void run_oneshot_cv(byte *result) {
+	if(adc_cv_state[0] & ADC_CV_RESULT) {
+		adc_cv_state[0] &= ~ADC_CV_RESULT;
+		if(adc_cv_result[0] < 256) {
+			if(*result != 1) {
+				*result = 1;
+				chan_ping(0);
+			}
+		}
+		else if(adc_cv_result[0] < 512) {
+			if(*result != 2) {
+				*result = 2;
+				chan_ping(1);
+			}
+		}
+		else if(adc_cv_result[0] < 768) {
+			if(*result != 3) {
+				*result = 3;
+				chan_ping(2);
+			}
+		}
+		else {
+			if(*result != 4) {
+				*result = 4;
+				chan_ping(3);
+			}
+		}
+	}
+}
+
 ////////////////////////////////////////////////////////////
 // MAIN
 void main()
@@ -430,7 +513,7 @@ void main()
 	//byte q=0;
 
 	byte last_key_state = 0;
-	
+	volatile byte result = 0;
 //	vca_set(VCA1,100);
 //	for(;;) {
 //	}
@@ -439,7 +522,8 @@ void main()
 int q=0;
 	while(1) {
 		adc_run();
-		chan_monitor();
+		run_oneshot_cv(&result);
+		//run_oneshot();
 		if(tick_flag) {
 			tick_flag = 0;
 			chan_tick();

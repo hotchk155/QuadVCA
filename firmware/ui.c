@@ -96,7 +96,7 @@ static byte ui_mode_edit_chan(byte key, byte modifiers) {
 			value = key_2_chan(key);
 			if(ui_mode == (UI_EDIT_CHAN_A + value)) {
 				// if channel is already selected, the gate is triggered
-				chan_trig(value);
+				chan_ping(value);
 				break;
 			}
 			else {

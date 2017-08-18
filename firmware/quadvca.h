@@ -27,13 +27,14 @@ extern byte led_buf[4];
 
 
 // CHANNELS
+void chan_ping(byte which);
 void chan_trig(byte which);
 void chan_untrig(byte which);
 void chan_tick();
-void chan_monitor();
 void chan_init();
 void chan_set(byte which, byte param, byte value);
 byte chan_get(byte which, byte param);
+void chan_vca(byte which, unsigned int level);
 
 void ui_notify(byte key, byte modifiers);
 void ui_tick();

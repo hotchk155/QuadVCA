@@ -118,7 +118,7 @@ static void apply_config(CHANNEL *chan) {
 ////////////////////////////////////////////////////////////////
 // Set VCA to a level 0-65535 and map into the useful range of 
 // the actual VCA controlling signal
-static void chan_2_vca(byte which, unsigned int level) {
+void chan_vca(byte which, unsigned int level) {
 
 	if(level) {	
 		level >>= 7; // into 0-511 range
@@ -152,10 +152,16 @@ static void chan_2_vca(byte which, unsigned int level) {
 	}
 }
 
+////////////////////////////////////////////////////////////////
+// TRIGGER ENVELOPE ON CHANNEL.. we expect a later untrigger
+void chan_trig(byte which) {
+	channels[which].is_trig = 1;
+	chan_ping(which);
+}
 
 ////////////////////////////////////////////////////////////////
 // TRIGGER ENVELOPE ON CHANNEL
-void chan_trig(byte which) {
+void chan_ping(byte which) {
 
 	CHANNEL *chan = &channels[which];
 	if(chan->density > 1) {
@@ -178,7 +184,7 @@ void chan_trig(byte which) {
 			else {
 				chan->env_level = 0;
 			}
-			chan_2_vca(which, chan->env_level);
+			chan_vca(which, chan->env_level);
 			break;
 	}
 }
@@ -200,13 +206,16 @@ void chan_untrig(byte which) {
 			}
 			break;
 	}
+	chan->is_trig = 0;
 }
 
 ////////////////////////////////////////////////////////////////
 // RESET CHANNEL STATE
 void chan_reset(byte which) {
-	channels[which].env_phase = ENV_ST_IDLE;
-	channels[which].env_level = 0;
+	CHANNEL *chan = &channels[cur_chan];
+	chan->env_phase = ENV_ST_IDLE;
+	chan->env_level = 0;
+	chan->is_trig = 0;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -294,7 +303,7 @@ void chan_tick() {
 			break;
 	}
 	
-	chan_2_vca(cur_chan, chan->env_level);
+	chan_vca(cur_chan, chan->env_level);
 	
 	// prepare to move to next channel
 	if(++cur_chan >= CHAN_MAX) {
@@ -303,25 +312,6 @@ void chan_tick() {
 }
 
 
-////////////////////////////////////////////////////////////////
-void chan_monitor() {
-	// edge detection on CV inputs
-	for(byte i=0; i<CHAN_MAX; ++i) {
-		byte *cv_in = &adc_cv_state[i];
-		if(*cv_in & ADC_CV_RISING_EDGE) {
-			*cv_in &= ~ADC_CV_RISING_EDGE;
-			// handle a trigger
-			chan_trig(i);
-			channels[i].is_trig = 1;
-		}
-		else if(*cv_in & ADC_CV_FALLING_EDGE) {
-			*cv_in &= ~ADC_CV_FALLING_EDGE;
-			// handle an untrigger
-			chan_untrig(i);
-			channels[i].is_trig = 0;
-		}	
-	}
-}
 
 ////////////////////////////////////////////////////////////////
 // INITIALISE CHANNEL
