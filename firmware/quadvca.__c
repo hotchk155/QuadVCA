@@ -6,14 +6,14 @@ Active Config=Debug
 Config=1
 Last Ext=c
 [Files]
-Count=5
+Count=7
 File0=adc.c
 File1=channel.c
 File2=quadvca.c
 File3=quadvca.h
 File4=ui.c
-File5=vca.c
-File6=vca.c
+File5=chars.h
+File6=global.c
 File7=menu.c
 [Debugger]
 DebugFromMain=1

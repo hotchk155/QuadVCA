@@ -1,20 +1,26 @@
 
 #include <system.h>
 #include <memory.h>
+#include "chars.h"
 
 
 enum {
 	P_RELEASE,
 	P_ATTACK,
 	P_SUSTAIN,
-	P_HOLD,
-	P_REPEAT,
-	P_DENSITY,
-	
-	P_FIRST = P_RELEASE,
-	P_LAST = P_DENSITY
+	//P_HOLD,
+	//P_REPEAT,
+	P_DENSITY,	
+	P_MAXENUM
 	
 };
+
+enum {
+	GLOBAL_SHARE_ENV,
+	GLOBAL_MAXENUM
+};
+
+
 
 #define CHAN_MAX 4
 typedef unsigned char byte;
@@ -25,6 +31,12 @@ extern unsigned int adc_cv_result[4];
 extern byte adc_cv_state[4];
 extern byte led_buf[4];
 
+extern byte chan_mixer_mode = 0;
+
+
+byte clamp(byte d, byte min, byte max);
+void global_set(byte param, int value);
+int global_get(byte param);
 
 // CHANNELS
 void chan_ping(byte which);
@@ -32,9 +44,11 @@ void chan_trig(byte which);
 void chan_untrig(byte which);
 void chan_tick();
 void chan_init();
-void chan_set(byte which, byte param, byte value);
-byte chan_get(byte which, byte param);
+void chan_set(byte which, byte param, int value);
+int chan_get(byte which, byte param);
 void chan_vca(byte which, unsigned int level);
+void chan_vca_direct(byte which, unsigned int level);
+void chan_toggle(byte which);
 
 void ui_notify(byte key, byte modifiers);
 void ui_tick();
@@ -98,66 +112,7 @@ enum {
 	LED_TRIG4	= 0x40
 };
 
-enum {
-	SEG_A  = 0x20,
-	SEG_B  = 0x80,
-	SEG_C  = 0x02,
-	SEG_D  = 0x10,
-	SEG_E  = 0x08,
-	SEG_F  = 0x40,
-	SEG_G  = 0x04,
-	SEG_DP = 0x01
-};
 
-
-enum {
-	CHAR_0	= SEG_A|SEG_B|SEG_C|SEG_D|SEG_E|SEG_F,
-	CHAR_1	= SEG_B|SEG_C,
-	CHAR_2	= SEG_A|SEG_B|SEG_D|SEG_E|SEG_G,
-	CHAR_3	= SEG_A|SEG_B|SEG_C|SEG_D|SEG_G,
-	CHAR_4	= SEG_B|SEG_C|SEG_F|SEG_G,
-	CHAR_5	= SEG_A|SEG_C|SEG_D|SEG_F|SEG_G,
-	CHAR_6	= SEG_A|SEG_C|SEG_D|SEG_E|SEG_F|SEG_G,
-	CHAR_7	= SEG_A|SEG_B|SEG_C,
-	CHAR_8	= SEG_A|SEG_B|SEG_C|SEG_D|SEG_E|SEG_F|SEG_G,
-	CHAR_9	= SEG_A|SEG_B|SEG_C|SEG_D|SEG_F|SEG_G,
-
-	/*
-	 AAA
-    F   B
-     GGG     
-    E   C
-     DDD
-*/
-
-	CHAR_A	= SEG_A|SEG_B|SEG_C|SEG_E|SEG_F|SEG_G,	
-	CHAR_B	= SEG_C|SEG_D|SEG_E|SEG_F|SEG_G,
-	CHAR_C	= SEG_A|SEG_D|SEG_E|SEG_F,
-	CHAR_D	= SEG_B|SEG_C|SEG_D|SEG_E|SEG_G,
-	CHAR_E	= SEG_A|SEG_D|SEG_E|SEG_F|SEG_G,
-	CHAR_F	= SEG_A|SEG_E|SEG_F|SEG_G,	
-	CHAR_G	= SEG_A|SEG_C|SEG_D|SEG_E|SEG_F,	
-	CHAR_H	= SEG_B|SEG_C|SEG_E|SEG_F|SEG_G,	
-	CHAR_I	= SEG_B|SEG_C,
-	CHAR_J	= SEG_B|SEG_C|SEG_D,	
-	CHAR_K	= SEG_A|SEG_C|SEG_E|SEG_F|SEG_G,	
-	CHAR_L	= SEG_D|SEG_E|SEG_F,	
-	CHAR_M	= SEG_A|SEG_C|SEG_E|SEG_G,
-	CHAR_N	= SEG_A|SEG_B|SEG_C|SEG_E|SEG_F,
-	CHAR_O	= SEG_A|SEG_B|SEG_C|SEG_D|SEG_E|SEG_F,	
-	CHAR_P	= SEG_A|SEG_B|SEG_E|SEG_F|SEG_G,	
-	CHAR_Q	= SEG_A|SEG_B|SEG_C|SEG_F|SEG_G,	
-	CHAR_R	= SEG_A|SEG_E|SEG_F,	
-	CHAR_S	= SEG_A|SEG_C|SEG_D|SEG_F|SEG_G,	
-	CHAR_T	= SEG_D|SEG_E|SEG_F|SEG_G,	
-	CHAR_U	= SEG_B|SEG_C|SEG_D|SEG_E|SEG_F,	
-	CHAR_V	= SEG_C|SEG_D|SEG_E,
-	CHAR_W	= SEG_A|SEG_C|SEG_D|SEG_E,
-	CHAR_X	= SEG_B|SEG_D|SEG_F|SEG_G,
-	CHAR_Y	= SEG_B|SEG_C|SEG_D|SEG_F|SEG_G,
-	CHAR_Z	= SEG_A|SEG_B|SEG_D|SEG_E|SEG_G
-	
-};
 /*
 enum {
 	VCA1,

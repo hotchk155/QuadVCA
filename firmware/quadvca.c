@@ -271,6 +271,17 @@ void init_usart()
 }
 */
 
+byte clamp(byte d, byte min, byte max) {
+	if(d < min) {
+		return min;
+	}
+	if(d > max) {
+		return max;
+	}
+	else {
+		return d;
+	}
+}
 
 ////////////////////////////////////////////////////////////
 // INTERRUPT HANDLER 
@@ -305,23 +316,42 @@ void init_display() {
 
 ////////////////////////////////////////////////////////////////
 // RUN ONE SHOT MODE
-void run_oneshot() {
+void run_oneshot(byte toggle) {
 	// edge detection on CV inputs
 	for(byte i=0; i<CHAN_MAX; ++i) {
 		byte *cv_in = &adc_cv_state[i];
 		if(*cv_in & ADC_CV_RISING_EDGE) {
 			*cv_in &= ~ADC_CV_RISING_EDGE;
-			// handle a trigger
-			chan_trig(i);
+			if(toggle) {
+				chan_toggle(i);
+			}
+			else {
+				chan_trig(i);
+			}
 		}
-		else if(*cv_in & ADC_CV_FALLING_EDGE) {
+		else if(*cv_in & ADC_CV_FALLING_EDGE) {		
 			*cv_in &= ~ADC_CV_FALLING_EDGE;
 			// handle an untrigger
-			chan_untrig(i);
+			if(!toggle) {
+				chan_untrig(i);
+			}
 		}	
 	}
 }
 
+////////////////////////////////////////////////////////////////
+// DIRECT FADER MODE
+void run_faders_cv() {
+	for(byte i=0; i<CHAN_MAX; ++i) {
+		if(adc_cv_state[i] & ADC_CV_RESULT) {
+			adc_cv_state[i] &= ~ADC_CV_RESULT;
+			chan_vca_direct(i, adc_cv_result[i]);
+		}
+	}
+}
+
+////////////////////////////////////////////////////////////////
+// RUN CROSSFADE MODE
 void run_crossfade_cv() {
 	if(adc_cv_state[0] & ADC_CV_RESULT) {
 		adc_cv_state[0] &= ~ADC_CV_RESULT;
@@ -356,35 +386,54 @@ void run_crossfade_cv() {
 	}
 }
 
-void run_oneshot_cv(byte *result) {
+////////////////////////////////////////////////////////////////
+// RUN CV ONESHOT MODE
+void run_oneshot_cv(byte *cur_chan) {
 	if(adc_cv_state[0] & ADC_CV_RESULT) {
 		adc_cv_state[0] &= ~ADC_CV_RESULT;
+		
+		byte new_chan;
 		if(adc_cv_result[0] < 256) {
-			if(*result != 1) {
-				*result = 1;
-				chan_ping(0);
-			}
+			new_chan = 0;
 		}
 		else if(adc_cv_result[0] < 512) {
-			if(*result != 2) {
-				*result = 2;
-				chan_ping(1);
-			}
+			new_chan = 1;
 		}
 		else if(adc_cv_result[0] < 768) {
-			if(*result != 3) {
-				*result = 3;
-				chan_ping(2);
-			}
+			new_chan = 2;
 		}
 		else {
-			if(*result != 4) {
-				*result = 4;
-				chan_ping(3);
+			new_chan = 3;
+		}
+		
+		if(new_chan != *cur_chan) {
+			if(*cur_chan < 4) {
+				chan_untrig(*cur_chan);
 			}
+			chan_trig(new_chan);
+			*cur_chan = new_chan;
 		}
 	}
 }
+
+////////////////////////////////////////////////////////////////
+// RUN CV ONESHOT MODE
+void run_solo(byte *cur_chan) {
+	byte new_chan = 0xFF;
+	for(byte i=0; i<CHAN_MAX; ++i) {
+		if(adc_cv_state[i] & ADC_CV_HIGH) {
+			new_chan = i;
+		}
+	}
+	if(new_chan != 0xFF && new_chan != *cur_chan) {
+		if(*cur_chan < 4) {
+			chan_untrig(*cur_chan);
+		}
+		chan_trig(new_chan);
+		*cur_chan = new_chan;
+	}
+}
+
 
 ////////////////////////////////////////////////////////////
 // MAIN
@@ -414,13 +463,15 @@ void main()
 	P_PWM2		= 1;
 	P_PWM3		= 1;
 	P_PWM4		= 1;
+
+	//porta = 0;
+	//portb = 0;
+	//portc = 0;
 	
 	wpua = 0b00000000;
+	wpub = 0b00000000;
+	wpuc = 0b00000000;
 	option_reg.7 = 0; // weak pull up enable
-
-	// enable interrupts	
-	//intcon.7 = 1; //GIE
-	//intcon.6 = 1; //PEIE	
 
 	// ensure the output drivers for each
 	// of the CCPx outputs are disabled
@@ -522,8 +573,9 @@ void main()
 int q=0;
 	while(1) {
 		adc_run();
-		run_oneshot_cv(&result);
+		//run_oneshot_cv(&result);
 		//run_oneshot();
+		run_faders_cv();
 		if(tick_flag) {
 			tick_flag = 0;
 			chan_tick();

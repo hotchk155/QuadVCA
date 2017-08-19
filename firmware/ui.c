@@ -4,6 +4,7 @@
 // the different UI modes
 enum {
 	UI_IDLE,
+	UI_EDIT_GLOBALS,
 	UI_EDIT_CHAN_A,
 	UI_EDIT_CHAN_B,
 	UI_EDIT_CHAN_C,
@@ -15,6 +16,7 @@ static byte led_2_disp[NUM_LEDS] = {LED_TRIG1, LED_TRIG2, LED_TRIG3, LED_TRIG4, 
 
 static byte digit_2_disp[10] = {CHAR_0, CHAR_1, CHAR_2, CHAR_3, CHAR_4, CHAR_5, CHAR_6, CHAR_7, CHAR_8, CHAR_9};
 byte cur_param = 0;
+byte global_param = 0;
 static byte led_timeout[6] = {0};
 byte ui_mode = UI_IDLE;
 byte ui_repaint = 1;
@@ -42,7 +44,7 @@ static byte ui_mode_idle(byte key, byte modifiers) {
 			led_buf[2] = SEG_DP;
 			break;
 		case KEY_SELECT:
-			cur_param = P_FIRST;
+			cur_param = 0;
 			ui_mode = UI_EDIT_CHAN_A;
 			return 1;
 		case KEY_CHAN_A:
@@ -51,6 +53,10 @@ static byte ui_mode_idle(byte key, byte modifiers) {
 		case KEY_CHAN_D:
 			chan_trig(key_2_chan(key));
 			break;
+		case KEY_MODE:
+			global_param = GLOBAL_SHARE_ENV;
+			ui_mode = UI_EDIT_GLOBALS;
+			return 1;
 	}
 	return 0;
 }
@@ -64,23 +70,19 @@ static byte ui_mode_edit_chan(byte key, byte modifiers) {
 		//////////////////////////////////////////
 		// Select between channel params
 		case KEY_SELECT:
-			if(++cur_param > P_LAST) {
-				cur_param = P_FIRST;
+			if(++cur_param >= P_MAXENUM) {
+				cur_param = 0;
 			}
 			break;
 		//////////////////////////////////////////
 		// Decrement value
 		case KEY_MINUS:
-			value = chan_get(chan, cur_param);
-			if(value) {
-				chan_set(chan, cur_param, value - 1);
-			}
+			chan_set(chan, cur_param, chan_get(chan, cur_param) - 1);
 			break;
 		//////////////////////////////////////////
 		// Increment value
 		case KEY_PLUS:
-			value = chan_get(chan, cur_param);
-			chan_set(chan, cur_param, value + 1);
+			chan_set(chan, cur_param, chan_get(chan, cur_param) + 1);
 			break;
 		//////////////////////////////////////////
 		// Exit from channel editing
@@ -120,14 +122,6 @@ static byte ui_mode_edit_chan(byte key, byte modifiers) {
 			led_buf[0] = CHAR_R;
 			led_buf[1] = CHAR_L|SEG_DP;
 			break;
-		case P_HOLD:
-			led_buf[0] = CHAR_H;
-			led_buf[1] = CHAR_L|SEG_DP;
-			break;
-		case P_REPEAT:
-			led_buf[0] = CHAR_R;
-			led_buf[1] = CHAR_P|SEG_DP;
-			break;
 		case P_DENSITY:
 			led_buf[0] = CHAR_D;
 			led_buf[1] = CHAR_N|SEG_DP;
@@ -139,11 +133,67 @@ static byte ui_mode_edit_chan(byte key, byte modifiers) {
 }
 
 //////////////////////////////////////////////////////////////////////
+// 
+static byte ui_mode_edit_globals(byte key, byte modifiers) {
+	byte value;
+	switch(key) {
+		//////////////////////////////////////////
+		// Select between channel params
+		case KEY_SELECT:
+			if(++global_param >= GLOBAL_MAXENUM) {
+				global_param = 0;
+			}
+			break;
+		//////////////////////////////////////////
+		// Decrement value
+		case KEY_MINUS:
+			global_set(global_param, global_get(global_param) - 1);
+			break;
+		//////////////////////////////////////////
+		// Increment value
+		case KEY_PLUS:
+			global_set(global_param, global_get(global_param) + 1);
+			break;
+		//////////////////////////////////////////
+		// Exit from channel editing
+		case KEY_MODE:
+			ui_mode = UI_IDLE;
+			return 1;
+		//////////////////////////////////////////
+		// Press a channel button
+		case KEY_CHAN_A:
+		case KEY_CHAN_B:
+		case KEY_CHAN_C:
+		case KEY_CHAN_D:
+			// the channel becomes selected
+			value = key_2_chan(key);			
+			ui_mode = UI_EDIT_CHAN_A + value;
+			return 1;
+	}
+	
+	// Update the channel edit display
+	switch(global_param) {
+		case GLOBAL_SHARE_ENV:
+			led_buf[0] = CHAR_S;
+			led_buf[1] = CHAR_H|SEG_DP;
+			break;
+	}
+	value = global_get(global_param);
+	led_buf[2] = digit_2_disp[value];
+	return 0;
+}
+
+//////////////////////////////////////////////////////////////////////
 // KEYPRESS HANDLER
 void ui_notify(byte key, byte modifiers) {
 	switch(ui_mode) {
 		case UI_IDLE:
 			if(ui_mode_idle(key, modifiers)) {
+				ui_repaint = 1;
+			}
+			break;
+		case UI_EDIT_GLOBALS:
+			if(ui_mode_edit_globals(key, modifiers)) {
 				ui_repaint = 1;
 			}
 			break;
@@ -174,6 +224,9 @@ void ui_tick() {
 
 	// now override LED states according to mode if needed
 	switch(ui_mode) {
+		case UI_EDIT_GLOBALS:
+			d |= (LED_TRIG1|LED_TRIG2|LED_TRIG3|LED_TRIG4);
+			break;
 		case UI_EDIT_CHAN_A:
 		case UI_EDIT_CHAN_B:
 		case UI_EDIT_CHAN_C:
