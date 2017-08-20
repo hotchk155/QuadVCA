@@ -35,7 +35,9 @@ RC6 / CCP4
 //
 // GLOBAL DATA
 //
-byte led_buf[4] = {0};
+volatile byte led_buf[4] = {0};
+volatile byte led_timeout[8] = {0};
+volatile byte dx_buf[4] = {0};
 
 //
 // FILE SCOPE DATA
@@ -47,9 +49,12 @@ static volatile byte tick_flag = 0; // flag set when millsecond interrupt fires
 
 
 // definitions for the display update state machine
-#define DX_REFRESH_DISPLAY 			0
-#define DX_BEGIN_KEYSCAN			1
-#define DX_KEYSCAN			 		2
+enum {
+	DX_PREP_REFRESH,
+	DX_REFRESH, 			
+	DX_PREP_KEYSCAN,			
+	DX_KEYSCAN
+};
 #define TIMER_INIT_DISPLAY_HOLD 	200	// display hold time (255 - timer1 ticks)
 #define TIMER_INIT_KEY_SETTLE		254 // key input settle time (255 - timer1 ticks)
 static volatile byte dx_state;
@@ -58,12 +63,14 @@ static volatile byte dx_mask;
 static volatile byte dx_key_state;
 static volatile byte key_state = 0;
 
-
+static byte trig_chan = 0;
+static byte run_mode = RUN_MODE_TRIG;
 
 ////////////////////////////////////////////////////////////
 // INTERRUPT HANDLER 
 void interrupt( void )
 {
+	byte i;
 	////////////////////////////////////////////////////////////
 	// timer 0 rollover ISR. Maintains the count of 
 	// "system ticks" that we use for key debounce etc
@@ -83,16 +90,35 @@ void interrupt( void )
 		pir1.0 = 0;
 		switch(dx_state) 
 		{
+
+		/////////////////////////////////////////////////////
+		case DX_PREP_REFRESH:
+			for(i=0;i<4;++i) {
+				dx_buf[i] = led_buf[i];
+			}
+			for(i=0;i<8;++i) {
+				if(led_timeout[i]) {
+					--led_timeout[i];
+					if(led_timeout[i]) {
+						dx_buf[3] &= ~(1<<i);
+					}
+					else {
+						dx_buf[3] |= (1<<i);
+					}
+				}
+			}
+			dx_state = DX_REFRESH;
+			// fall through
 		
 		/////////////////////////////////////////////////////
-		case DX_REFRESH_DISPLAY:
+		case DX_REFRESH:
 			// Load shift reg content to outputs, disabling
 			// all sink lines and turning off the display
 			P_SR_RCK = 0;
 			P_SR_RCK = 1;	
 		
 			// Load shift register
-			byte d = led_buf[dx_disp];
+			byte d = dx_buf[dx_disp];
 			byte m = 0x80;
 			while(m) {
 				P_SR_SCK = 0;
@@ -134,7 +160,7 @@ void interrupt( void )
 			
 			// prepare for next display
 			if(++dx_disp >= 4) {
-				dx_state = DX_BEGIN_KEYSCAN;
+				dx_state = DX_PREP_KEYSCAN;
 				dx_disp = 0; 
 			}
 			// set next timer interrupt after display on time
@@ -143,7 +169,7 @@ void interrupt( void )
 			break;
 					
 		/////////////////////////////////////////////////////
-		case DX_BEGIN_KEYSCAN:
+		case DX_PREP_KEYSCAN:
 			// Load shift reg content to outputs, disabling
 			// all sink lines and turning off the display
 			P_SR_RCK = 0;
@@ -201,7 +227,7 @@ void interrupt( void )
 				
 				// back to display refresh mode
 				key_state = dx_key_state;
-				dx_state = DX_REFRESH_DISPLAY;
+				dx_state = DX_PREP_REFRESH;
 			}
 			// next tick after key settle time
 			//****
@@ -283,6 +309,31 @@ byte clamp(byte d, byte min, byte max) {
 	}
 }
 
+void set_run_mode(int mode) 
+{
+	if(mode >= 0 && mode < RUN_MODE_MAXENUM)
+	{
+		switch(mode)
+		{
+		case RUN_MODE_TRIG_MIX:
+		case RUN_MODE_TOGGLE_MIX:
+		case RUN_MODE_TRIGCV_MIX:
+		case RUN_MODE_SOLOTRIG_MIX:
+			chan_mixer_mode = 1;
+			break;
+		default:
+			chan_mixer_mode = 0;
+			break;
+		}
+		trig_chan = 0;
+		run_mode = mode;
+	}
+}
+int get_run_mode()
+{
+	return run_mode;
+}
+
 ////////////////////////////////////////////////////////////
 // INTERRUPT HANDLER 
 void init_display() {
@@ -308,7 +359,7 @@ void init_display() {
 	P_SR_RCK = 0;
 	P_SR_RCK = 1;		
 
-	dx_state = DX_REFRESH_DISPLAY;
+	dx_state = DX_PREP_REFRESH;
 	dx_disp = 0;
 	dx_mask = 0;
 	dx_key_state = 0;
@@ -337,6 +388,12 @@ void run_oneshot(byte toggle) {
 			}
 		}	
 	}
+}
+
+////////////////////////////////////////////////////////////////
+// VELOCITY TRIG
+void run_oneshot_vel() {
+//TODO
 }
 
 ////////////////////////////////////////////////////////////////
@@ -417,7 +474,7 @@ void run_oneshot_cv(byte *cur_chan) {
 }
 
 ////////////////////////////////////////////////////////////////
-// RUN CV ONESHOT MODE
+// PRIORITY SOLO
 void run_solo(byte *cur_chan) {
 	byte new_chan = 0xFF;
 	for(byte i=0; i<CHAN_MAX; ++i) {
@@ -563,8 +620,8 @@ void main()
 	unsigned int d = 0;
 	//byte q=0;
 
+	set_run_mode(RUN_MODE_TRIG);
 	byte last_key_state = 0;
-	volatile byte result = 0;
 //	vca_set(VCA1,100);
 //	for(;;) {
 //	}
@@ -573,9 +630,31 @@ void main()
 int q=0;
 	while(1) {
 		adc_run();
-		//run_oneshot_cv(&result);
-		//run_oneshot();
-		run_faders_cv();
+		switch(run_mode) {
+			case RUN_MODE_TRIG: 	
+			case RUN_MODE_TRIG_MIX: 	
+				run_oneshot(false); 
+				break;
+			case RUN_MODE_TOGGLE:	
+			case RUN_MODE_TOGGLE_MIX:	
+				run_oneshot(true); 
+				break;
+			case RUN_MODE_TRIGCV: 	
+			case RUN_MODE_TRIGCV_MIX: 	
+				run_oneshot_cv(&trig_chan); 
+				break;
+			case RUN_MODE_SOLOTRIG: 
+			case RUN_MODE_SOLOTRIG_MIX: 
+				run_solo(&trig_chan); 
+				break;
+			case RUN_MODE_FADERSCV:	
+				run_faders_cv(); 
+				break;
+			case RUN_MODE_XFADECV:	
+				run_crossfade_cv(); 
+				break;
+		};
+		
 		if(tick_flag) {
 			tick_flag = 0;
 			chan_tick();
@@ -602,3 +681,4 @@ int q=0;
 //
 // END
 //
+

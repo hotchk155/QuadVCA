@@ -136,7 +136,7 @@ void chan_ping(byte which) {
 
 	CHANNEL *this_chan = &channels[which];
 	CHANNEL *env_chan = chan_mixer_mode? &channels[0] : this_chan;
-	
+	ui_blink_led(which);	
 	if(!chan_mixer_mode && this_chan->density > 1) {
 		if(this_chan->count++ < this_chan->density)
 			return;

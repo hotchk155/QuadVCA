@@ -9,11 +9,11 @@ Last Ext=c
 Count=7
 File0=adc.c
 File1=channel.c
-File2=quadvca.c
-File3=quadvca.h
-File4=ui.c
-File5=chars.h
-File6=global.c
+File2=chars.h
+File3=global.c
+File4=quadvca.c
+File5=quadvca.h
+File6=ui.c
 File7=menu.c
 [Debugger]
 DebugFromMain=1

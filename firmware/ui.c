@@ -4,6 +4,7 @@
 // the different UI modes
 enum {
 	UI_IDLE,
+	UI_SELECT_MODE,
 	UI_EDIT_GLOBALS,
 	UI_EDIT_CHAN_A,
 	UI_EDIT_CHAN_B,
@@ -11,15 +12,17 @@ enum {
 	UI_EDIT_CHAN_D
 };
 #define NUM_LEDS 6
-
+#define LED_BLINK_TIME 2
 static byte led_2_disp[NUM_LEDS] = {LED_TRIG1, LED_TRIG2, LED_TRIG3, LED_TRIG4, LED_CLK, LED_ACT };
+
+
 
 static byte digit_2_disp[10] = {CHAR_0, CHAR_1, CHAR_2, CHAR_3, CHAR_4, CHAR_5, CHAR_6, CHAR_7, CHAR_8, CHAR_9};
 byte cur_param = 0;
 byte global_param = 0;
-static byte led_timeout[6] = {0};
 byte ui_mode = UI_IDLE;
 byte ui_repaint = 1;
+
 
 static byte key_2_chan(byte which) {
 	switch(which) {
@@ -54,8 +57,14 @@ static byte ui_mode_idle(byte key, byte modifiers) {
 			chan_trig(key_2_chan(key));
 			break;
 		case KEY_MODE:
-			global_param = GLOBAL_SHARE_ENV;
-			ui_mode = UI_EDIT_GLOBALS;
+			if(modifiers & KEY_SELECT) {
+				ui_mode = UI_SELECT_MODE;
+				return 1;
+			}
+			else {
+				global_param = GLOBAL_SHARE_ENV;
+				ui_mode = UI_EDIT_GLOBALS;
+			}
 			return 1;
 	}
 	return 0;
@@ -87,8 +96,14 @@ static byte ui_mode_edit_chan(byte key, byte modifiers) {
 		//////////////////////////////////////////
 		// Exit from channel editing
 		case KEY_MODE:
-			ui_mode = UI_IDLE;
-			return 1;
+			if(modifiers & KEY_SELECT) {
+				ui_mode = UI_SELECT_MODE;
+				return 1;
+			}
+			else {
+				ui_mode = UI_IDLE;
+				return 1;
+			}
 		//////////////////////////////////////////
 		// Press a channel button
 		case KEY_CHAN_A:
@@ -157,8 +172,14 @@ static byte ui_mode_edit_globals(byte key, byte modifiers) {
 		//////////////////////////////////////////
 		// Exit from channel editing
 		case KEY_MODE:
-			ui_mode = UI_IDLE;
-			return 1;
+			if(modifiers & KEY_SELECT) {
+				ui_mode = UI_SELECT_MODE;
+				return 1;
+			}
+			else {
+				ui_mode = UI_IDLE;
+				return 1;
+			}
 		//////////////////////////////////////////
 		// Press a channel button
 		case KEY_CHAN_A:
@@ -184,11 +205,96 @@ static byte ui_mode_edit_globals(byte key, byte modifiers) {
 }
 
 //////////////////////////////////////////////////////////////////////
+// CHANGE UI MODE
+static byte ui_mode_select(byte key, byte modifiers) {
+	switch(key) {
+		case KEY_MODE:
+		case KEY_SELECT:
+			ui_mode = UI_IDLE;
+			return 1;
+		case KEY_MINUS:
+			set_run_mode(get_run_mode() - 1);
+			break;
+		case KEY_PLUS:
+			set_run_mode(get_run_mode() + 1);
+			break;
+		case KEY_CHAN_A:
+		case KEY_CHAN_B:
+		case KEY_CHAN_C:
+		case KEY_CHAN_D:
+			// the channel becomes selected
+			ui_mode = UI_EDIT_CHAN_A + key_2_chan(key);
+			return 1;
+	}
+
+	switch(get_run_mode()) {
+		case RUN_MODE_TRIG_MIX:
+			led_buf[0] = CHAR_T;
+			led_buf[1] = CHAR_R;
+			led_buf[2] = CHAR_G;
+			break;
+		case RUN_MODE_TRIG:
+			led_buf[0] = CHAR_T;
+			led_buf[1] = CHAR_R;
+			led_buf[2] = CHAR_2;
+			break;
+		case RUN_MODE_TOGGLE:
+			led_buf[0] = CHAR_T;
+			led_buf[1] = CHAR_O;
+			led_buf[2] = CHAR_G;
+			break;
+		case RUN_MODE_TOGGLE_MIX:
+			led_buf[0] = CHAR_T;
+			led_buf[1] = CHAR_G;
+			led_buf[2] = CHAR_2;
+			break;
+		case RUN_MODE_TRIGCV:
+			led_buf[0] = CHAR_T;
+			led_buf[1] = CHAR_C;
+			led_buf[2] = CHAR_V;
+			break;
+		case RUN_MODE_TRIGCV_MIX:
+			led_buf[0] = CHAR_T;
+			led_buf[1] = CHAR_C;
+			led_buf[2] = CHAR_2;
+			break;
+		case RUN_MODE_SOLOTRIG:
+			led_buf[0] = CHAR_P;
+			led_buf[1] = CHAR_R;
+			led_buf[2] = CHAR_T;
+			break;
+		case RUN_MODE_SOLOTRIG_MIX:
+			led_buf[0] = CHAR_P;
+			led_buf[1] = CHAR_R;
+			led_buf[2] = CHAR_2;
+			break;
+		case RUN_MODE_FADERSCV:
+			led_buf[0] = CHAR_F;
+			led_buf[1] = CHAR_A;
+			led_buf[2] = CHAR_D;
+			break;
+		case RUN_MODE_XFADECV:
+			led_buf[0] = CHAR_C;
+			led_buf[1] = CHAR_R;
+			led_buf[2] = CHAR_F;
+			break;
+	}
+	return 0;
+}
+
+//////////////////////////////////////////////////////////////////////
 // KEYPRESS HANDLER
 void ui_notify(byte key, byte modifiers) {
+
+		
 	switch(ui_mode) {
 		case UI_IDLE:
 			if(ui_mode_idle(key, modifiers)) {
+				ui_repaint = 1;
+			}
+			break;
+		case UI_SELECT_MODE:
+			if(ui_mode_select(key, modifiers)) {
 				ui_repaint = 1;
 			}
 			break;
@@ -208,23 +314,20 @@ void ui_notify(byte key, byte modifiers) {
 	}
 }
 
+void ui_blink_led(byte which) {
+	byte x[6] = {7, 3, 5, 6, 0, 4};
+	led_timeout[x[which]] += LED_BLINK_TIME;	
+}
 
 // to be called once every 1 ms 
 void ui_tick() {
 
 	byte d = 0;
-	// deal with LEDs that have been switched on for a 
-	// finite blink time
-	for(byte i=0; i<NUM_LEDS; ++i) {
-		if(led_timeout[i]) {
-			d |= led_2_disp[i];
-			--led_timeout[i];
-		}
-	}
-
-	// now override LED states according to mode if needed
+	
+	// LED states according to mode 
 	switch(ui_mode) {
 		case UI_EDIT_GLOBALS:
+		case UI_SELECT_MODE:
 			d |= (LED_TRIG1|LED_TRIG2|LED_TRIG3|LED_TRIG4);
 			break;
 		case UI_EDIT_CHAN_A:

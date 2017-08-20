@@ -20,7 +20,19 @@ enum {
 	GLOBAL_MAXENUM
 };
 
-
+enum {
+	RUN_MODE_TRIG,
+	RUN_MODE_TRIG_MIX,
+	RUN_MODE_TOGGLE,
+	RUN_MODE_TOGGLE_MIX,
+	RUN_MODE_TRIGCV,
+	RUN_MODE_TRIGCV_MIX,
+	RUN_MODE_SOLOTRIG,
+	RUN_MODE_SOLOTRIG_MIX,
+	RUN_MODE_FADERSCV,
+	RUN_MODE_XFADECV,
+	RUN_MODE_MAXENUM
+};
 
 #define CHAN_MAX 4
 typedef unsigned char byte;
@@ -30,11 +42,19 @@ typedef unsigned int word;
 extern unsigned int adc_cv_result[4];
 extern byte adc_cv_state[4];
 extern byte led_buf[4];
+extern byte led_timeout[8];
 
 extern byte chan_mixer_mode = 0;
+extern volatile byte disp_refresh;
 
 
 byte clamp(byte d, byte min, byte max);
+void set_run_mode(int mode);
+int get_run_mode();
+void ui_blink_led(byte which);
+
+
+
 void global_set(byte param, int value);
 int global_get(byte param);
 
