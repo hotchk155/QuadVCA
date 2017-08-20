@@ -391,6 +391,29 @@ void run_oneshot(byte toggle) {
 }
 
 ////////////////////////////////////////////////////////////////
+// 
+void run_oneshot_step() {
+	byte *cv_in; 
+	byte i;
+	cv_in = &adc_cv_state[1];
+	if(*cv_in & ADC_CV_RISING_EDGE) {
+		*cv_in &= ~ADC_CV_RISING_EDGE;		
+		for(i=0; i<4; ++i) {
+			chan_reset_cycle(i);
+		}
+	}
+	
+	cv_in = &adc_cv_state[0];
+	if(*cv_in & ADC_CV_RISING_EDGE) {
+		*cv_in &= ~ADC_CV_RISING_EDGE;
+		ui_blink_led(4);
+		for(i=0; i<4; ++i) {
+			chan_ping(i);
+		}
+	}
+}
+
+////////////////////////////////////////////////////////////////
 // VELOCITY TRIG
 void run_oneshot_vel() {
 //TODO
@@ -652,6 +675,9 @@ int q=0;
 				break;
 			case RUN_MODE_XFADECV:	
 				run_crossfade_cv(); 
+				break;
+			case RUN_MODE_STEP:	
+				run_oneshot_step(); 
 				break;
 		};
 		

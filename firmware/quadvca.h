@@ -8,9 +8,11 @@ enum {
 	P_RELEASE,
 	P_ATTACK,
 	P_SUSTAIN,
+//	P_MASK,
+	P_CYCLE,
 	//P_HOLD,
 	//P_REPEAT,
-	P_DENSITY,	
+	//P_DENSITY,	
 	P_MAXENUM
 	
 };
@@ -31,6 +33,7 @@ enum {
 	RUN_MODE_SOLOTRIG_MIX,
 	RUN_MODE_FADERSCV,
 	RUN_MODE_XFADECV,
+	RUN_MODE_STEP,
 	RUN_MODE_MAXENUM
 };
 
@@ -69,6 +72,7 @@ int chan_get(byte which, byte param);
 void chan_vca(byte which, unsigned int level);
 void chan_vca_direct(byte which, unsigned int level);
 void chan_toggle(byte which);
+void chan_reset_cycle(byte which);
 
 void ui_notify(byte key, byte modifiers);
 void ui_tick();

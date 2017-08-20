@@ -36,7 +36,10 @@ typedef struct {
 	// Config params 
 	//byte hold;
 	//byte repeat;
-	byte density;	
+	byte trig_mask;	
+	byte trig_mask_cycle;	
+	byte trig_mask_index;	
+	
 	byte attack_slope;
 	byte sustain;
 	byte release_slope;
@@ -52,7 +55,6 @@ typedef struct {
 	word env_max;		// maximum envelope level 
 //	word timeout;		
 
-	byte count;
 } CHANNEL;
 
 
@@ -127,7 +129,13 @@ void chan_vca_direct(byte which, unsigned int level) {
 void chan_trig(byte which) {
 	CHANNEL *this_chan = &channels[which];
 	this_chan->is_trig = 1;
-	chan_ping(which);
+	ui_blink_led(which);	
+	chan_ping(which);	
+}
+
+void chan_reset_cycle(byte which) {
+	CHANNEL *this_chan = &channels[which];
+	this_chan->trig_mask_index = 0;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -136,11 +144,15 @@ void chan_ping(byte which) {
 
 	CHANNEL *this_chan = &channels[which];
 	CHANNEL *env_chan = chan_mixer_mode? &channels[0] : this_chan;
-	ui_blink_led(which);	
-	if(!chan_mixer_mode && this_chan->density > 1) {
-		if(this_chan->count++ < this_chan->density)
+	
+	if(!chan_mixer_mode) {
+		byte d = (this_chan->trig_mask & (1<<this_chan->trig_mask_index));
+		if(++this_chan->trig_mask_index >= this_chan->trig_mask_cycle) {
+			this_chan->trig_mask_index = 0;
+		}
+		if(!d) {
 			return;
-		this_chan->count = 0;
+		}
 	}
 		
 	switch(this_chan->env_phase) {
@@ -278,9 +290,12 @@ void chan_tick() {
 // INITIALISE CHANNEL
 void chan_init() {
 	for(byte i=0; i<CHAN_MAX; ++i) {
-		CHANNEL *this_chan = &channels[cur_chan];
+		CHANNEL *this_chan = &channels[i];
 		memset(this_chan, 0, sizeof(CHANNEL));
 		this_chan->release_slope = SLOPE_MEDIUM;
+		this_chan->trig_mask = 0b00000001;
+		this_chan->trig_mask_cycle = 1;	
+
 		chan_reset(i);
 	}
 } 
@@ -301,8 +316,11 @@ void chan_set(byte which, byte param, int value) {
 		case P_RELEASE:
 			env_chan->release_slope = clamp(value, 0, SLOPE_MAX-1);
 			break;
-		case P_DENSITY:
-			this_chan->density = clamp(value, 0, 8);
+		case P_CYCLE:
+			env_chan->trig_mask_cycle = clamp(value, 1, 8);
+			break;
+		//case P_DENSITY:
+		//	this_chan->density = clamp(value, 0, 8);
 	}	
 }
 
@@ -319,8 +337,10 @@ int chan_get(byte which, byte param) {
 			return env_chan->sustain;
 		case P_RELEASE:
 			return env_chan->release_slope;
-		case P_DENSITY:
-			return this_chan->density;
+		case P_CYCLE:
+			return env_chan->trig_mask_cycle;
+		//case P_DENSITY:
+		//	return this_chan->density;
 	}
 	return 0;
 };

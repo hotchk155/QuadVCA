@@ -5,7 +5,6 @@
 enum {
 	UI_IDLE,
 	UI_SELECT_MODE,
-	UI_EDIT_GLOBALS,
 	UI_EDIT_CHAN_A,
 	UI_EDIT_CHAN_B,
 	UI_EDIT_CHAN_C,
@@ -57,14 +56,7 @@ static byte ui_mode_idle(byte key, byte modifiers) {
 			chan_trig(key_2_chan(key));
 			break;
 		case KEY_MODE:
-			if(modifiers & KEY_SELECT) {
-				ui_mode = UI_SELECT_MODE;
-				return 1;
-			}
-			else {
-				global_param = GLOBAL_SHARE_ENV;
-				ui_mode = UI_EDIT_GLOBALS;
-			}
+			ui_mode = UI_SELECT_MODE;
 			return 1;
 	}
 	return 0;
@@ -96,14 +88,9 @@ static byte ui_mode_edit_chan(byte key, byte modifiers) {
 		//////////////////////////////////////////
 		// Exit from channel editing
 		case KEY_MODE:
-			if(modifiers & KEY_SELECT) {
-				ui_mode = UI_SELECT_MODE;
-				return 1;
-			}
-			else {
-				ui_mode = UI_IDLE;
-				return 1;
-			}
+			ui_mode = UI_SELECT_MODE;
+			return 1;
+			
 		//////////////////////////////////////////
 		// Press a channel button
 		case KEY_CHAN_A:
@@ -137,9 +124,9 @@ static byte ui_mode_edit_chan(byte key, byte modifiers) {
 			led_buf[0] = CHAR_R;
 			led_buf[1] = CHAR_L|SEG_DP;
 			break;
-		case P_DENSITY:
-			led_buf[0] = CHAR_D;
-			led_buf[1] = CHAR_N|SEG_DP;
+		case P_CYCLE:
+			led_buf[0] = CHAR_C;
+			led_buf[1] = CHAR_Y|SEG_DP;
 			break;
 	}
 	value = chan_get(chan, cur_param);
@@ -147,6 +134,7 @@ static byte ui_mode_edit_chan(byte key, byte modifiers) {
 	return 0;
 }
 
+/*
 //////////////////////////////////////////////////////////////////////
 // 
 static byte ui_mode_edit_globals(byte key, byte modifiers) {
@@ -203,6 +191,7 @@ static byte ui_mode_edit_globals(byte key, byte modifiers) {
 	led_buf[2] = digit_2_disp[value];
 	return 0;
 }
+*/
 
 //////////////////////////////////////////////////////////////////////
 // CHANGE UI MODE
@@ -278,6 +267,11 @@ static byte ui_mode_select(byte key, byte modifiers) {
 			led_buf[1] = CHAR_R;
 			led_buf[2] = CHAR_F;
 			break;
+		case RUN_MODE_STEP:
+			led_buf[0] = CHAR_S;
+			led_buf[1] = CHAR_T;
+			led_buf[2] = CHAR_P;
+			break;
 	}
 	return 0;
 }
@@ -295,11 +289,6 @@ void ui_notify(byte key, byte modifiers) {
 			break;
 		case UI_SELECT_MODE:
 			if(ui_mode_select(key, modifiers)) {
-				ui_repaint = 1;
-			}
-			break;
-		case UI_EDIT_GLOBALS:
-			if(ui_mode_edit_globals(key, modifiers)) {
 				ui_repaint = 1;
 			}
 			break;
@@ -326,9 +315,8 @@ void ui_tick() {
 	
 	// LED states according to mode 
 	switch(ui_mode) {
-		case UI_EDIT_GLOBALS:
 		case UI_SELECT_MODE:
-			d |= (LED_TRIG1|LED_TRIG2|LED_TRIG3|LED_TRIG4);
+//			d |= (LED_TRIG1|LED_TRIG2|LED_TRIG3|LED_TRIG4);
 			break;
 		case UI_EDIT_CHAN_A:
 		case UI_EDIT_CHAN_B:
