@@ -8,11 +8,9 @@ enum {
 	P_RELEASE,
 	P_ATTACK,
 	P_SUSTAIN,
-//	P_MASK,
+	P_OPTION,
+	P_MASK,
 	P_CYCLE,
-	//P_HOLD,
-	//P_REPEAT,
-	//P_DENSITY,	
 	P_MAXENUM
 	
 };
@@ -42,14 +40,13 @@ typedef unsigned char byte;
 typedef unsigned int word;
 
 
-extern unsigned int adc_cv_result[4];
+extern word adc_cv_result[4];
 extern byte adc_cv_state[4];
-extern byte led_buf[4];
-extern byte led_timeout[8];
+
+extern volatile byte led_buf[4];
+extern volatile byte led_timeout[8];
 
 extern byte chan_mixer_mode = 0;
-extern volatile byte disp_refresh;
-
 
 byte clamp(byte d, byte min, byte max);
 void set_run_mode(int mode);
@@ -57,9 +54,10 @@ int get_run_mode();
 void ui_blink_led(byte which);
 
 
-
 void global_set(byte param, int value);
 int global_get(byte param);
+
+void vca(byte which, word level);
 
 // CHANNELS
 void chan_ping(byte which);
@@ -69,9 +67,9 @@ void chan_tick();
 void chan_init();
 void chan_set(byte which, byte param, int value);
 int chan_get(byte which, byte param);
-void chan_vca(byte which, unsigned int level);
-void chan_vca_direct(byte which, unsigned int level);
+void chan_vca(byte which, word level);
 void chan_toggle(byte which);
+void chan_reset(byte which);
 void chan_reset_cycle(byte which);
 
 void ui_notify(byte key, byte modifiers);
@@ -126,14 +124,13 @@ void adc_run();
 #define P_KB_READ		porta.1
 
 
-
 enum {
-	LED_CLK		= 0x01,
-	LED_ACT		= 0x10,
-	LED_TRIG1	= 0x80,
-	LED_TRIG2	= 0x08,
-	LED_TRIG3	= 0x20,
-	LED_TRIG4	= 0x40
+	LED_CHAN1 = 0,
+	LED_CHAN2 = 1,
+	LED_CHAN3 = 2,
+	LED_CHAN4 = 3,
+	LED_CLOCK,
+	LED_ACT
 };
 
 

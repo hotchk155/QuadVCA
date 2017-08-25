@@ -15,7 +15,7 @@ enum {
 	SLOPE_MEDIUM,
 	SLOPE_SLOW,
 	SLOPE_SLOWEST,
-	SLOPE_MAX
+	SLOPE_MAXENUM
 };
 
 enum {
@@ -27,15 +27,40 @@ enum {
 	INC_SLOWEST 	= 100
 };
 
-unsigned int slopes[SLOPE_MAX] = {
+enum {
+	CH_OPT_NONE,	
+	CH_OPT_SLAVE,		//1
+	CH_OPT_LINK,		//2
+	CH_OPT_CHOKE,		//3
+	CH_OPT_INV,			//4
+	CH_OPT_LINK_INV,	//5
+	CH_OPT_MAXENUM
+};
+
+#define TRIG_MASK_MAX  10
+
+byte trig_masks[TRIG_MASK_MAX] = {
+		0b00000001,
+		0b11011011,
+		0b00110111,
+		0b10110110,
+		0b01000100,
+		0b00110100,
+		0b10101101,
+		0b00100110,
+		0b01010000,
+		0b01011101
+};
+
+
+word slopes[SLOPE_MAXENUM] = {
 	INC_INSTANT, INC_FASTEST, INC_FAST, INC_MEDIUM, INC_SLOW, INC_SLOWEST
 };
 
 typedef struct {
 	
 	// Config params 
-	//byte hold;
-	//byte repeat;
+	byte option;	
 	byte trig_mask;	
 	byte trig_mask_cycle;	
 	byte trig_mask_index;	
@@ -46,14 +71,12 @@ typedef struct {
 		
 	word attack_inc; 
 	word release_inc; 	
-//	word sustain_ms;	// time in milliseconds
 
 	// Running status
 	byte is_trig;		// trigger flag
 	byte env_phase;		// envelope phase
 	word env_level;		// current value
 	word env_max;		// maximum envelope level 
-//	word timeout;		
 
 } CHANNEL;
 
@@ -68,60 +91,16 @@ byte chan_mixer_mode = 0;
 
 
 
-/*static void apply_config(CHANNEL *chan) {
-
-	CHANNEL *env = g_shared_env? &channels[0] : chan;
-	
-	env->attack_slope = clamp(chan->attack_slope, 0, SLOPE_MAX-1);
-	env->release_slope = clamp(chan->release_slope, 0, SLOPE_MAX-1);
-	env->sustain = clamp(chan->sustain, 0, 1);
-	env->attack_inc = slopes[chan->attack_slope];
-	env->release_inc = slopes[chan->release_slope];
-	
-	chan->density = clamp(chan->density, 1, 8);
-		
-}*/
-
-void chan_vca(byte which, unsigned int level) {
-
-	if(level) {	
-		level >>= 7; // into 0-511 range
-		level += 512;
-	}
-	chan_vca_direct(which, level);
-}
-
 ////////////////////////////////////////////////////////////////
-// Set VCA to a level 0-65535 and map into the useful range of 
-// the actual VCA controlling signal
-void chan_vca_direct(byte which, unsigned int level) {
-
-	
-	// works in inverse sense
-	level = 1023-level;
-	
-	switch(which) {
-		case 0:
-			ccpr2l = level>>2;
-			ccp2con.5 = level.1;
-			ccp2con.4 = level.0;	
-			break;
-		case 1:
-			ccpr4l = level>>2;
-			ccp4con.5 = level.1;
-			ccp4con.4 = level.0;	
-			break;
-		case 2:
-			ccpr3l = level>>2;
-			ccp3con.5 = level.1;
-			ccp3con.4 = level.0;	
-			break;
-		case 3:
-			ccpr1l = level>>2;
-			ccp1con.5 = level.1;
-			ccp1con.4 = level.0;	
-			break;
+// SET VCA OUTPUT LEVEL FOR A CHANNEL
+// level is 0-65535 and will be scaled for 10 bit VCA out
+// scale parameter is 0 for no scaling, 1 for env scaling
+void chan_vca(byte which, word level) {
+	if(channels[which].option == CH_OPT_INV ||
+		channels[which].option == CH_OPT_LINK_INV) {
+		level = 65535 - level;
 	}
+	vca(which, level>>6);
 }
 
 ////////////////////////////////////////////////////////////////
@@ -129,24 +108,26 @@ void chan_vca_direct(byte which, unsigned int level) {
 void chan_trig(byte which) {
 	CHANNEL *this_chan = &channels[which];
 	this_chan->is_trig = 1;
-	ui_blink_led(which);	
+	//ui_blink_led(which);	
 	chan_ping(which);	
-}
-
-void chan_reset_cycle(byte which) {
-	CHANNEL *this_chan = &channels[which];
-	this_chan->trig_mask_index = 0;
 }
 
 ////////////////////////////////////////////////////////////////
 // TRIGGER ENVELOPE ON CHANNEL
 void chan_ping(byte which) {
 
-	CHANNEL *this_chan = &channels[which];
-	CHANNEL *env_chan = chan_mixer_mode? &channels[0] : this_chan;
+	CHANNEL *this_chan = &channels[which];	
 	
+	// If this channel is directly linked to the level of another 
+	// channel then we do not trigger its evelopes
+	if (this_chan->option == CH_OPT_LINK ||
+		this_chan->option == CH_OPT_LINK_INV) {
+		return;
+	}
+	
+	// Check if a trigger mask is active on the channel
 	if(!chan_mixer_mode) {
-		byte d = (this_chan->trig_mask & (1<<this_chan->trig_mask_index));
+		byte d = (trig_masks[this_chan->trig_mask] & (1<<this_chan->trig_mask_index));
 		if(++this_chan->trig_mask_index >= this_chan->trig_mask_cycle) {
 			this_chan->trig_mask_index = 0;
 		}
@@ -154,24 +135,46 @@ void chan_ping(byte which) {
 			return;
 		}
 	}
-		
-	switch(this_chan->env_phase) {
-		case ENV_ST_IDLE:
-		case ENV_ST_RELEASE:
-		case ENV_ST_ATTACK:
-		case ENV_ST_SUSTAIN:
-			this_chan->env_phase = ENV_ST_ATTACK;
-			this_chan->attack_inc = slopes[env_chan->attack_slope];			
-			this_chan->env_max = 0xFFFF;
-			if(this_chan->attack_inc == 0xFFFF) {
-				this_chan->env_level = this_chan->env_max;
-			}
-			else {
-				this_chan->env_level = 0;
-			}
-			chan_vca(which, this_chan->env_level);
+	
+	// loop through the targeted channel and subsequent channels that have
+	// triggers that are slaved to it
+	for(byte chan = which; chan < 4; ++chan) {
+	
+		this_chan = &channels[chan];
+		CHANNEL *env_chan = chan_mixer_mode? &channels[0] : this_chan;
+
+		// when we reach the first following channel that is not a trigger
+		// slave, we can stop the search
+		if(chan > which && this_chan->option != CH_OPT_SLAVE) {
 			break;
+		}
+
+		ui_blink_led(chan);		
+
+		switch(this_chan->env_phase) {
+			case ENV_ST_IDLE:
+			case ENV_ST_RELEASE:
+			case ENV_ST_ATTACK:
+			case ENV_ST_SUSTAIN:
+				this_chan->env_phase = ENV_ST_ATTACK;
+				this_chan->attack_inc = slopes[env_chan->attack_slope];			
+				this_chan->env_max = 0xFFFF;
+				if(this_chan->attack_inc == 0xFFFF) {
+					this_chan->env_level = this_chan->env_max;
+				}
+				else {
+					this_chan->env_level = 0;
+				}
+				chan_vca(chan, this_chan->env_level);
+				break;
+		}
 	}
+	
+	// now look for following channels that have a "choke"
+	for(byte slave = which + 1; slave < 4 && channels[slave].option == CH_OPT_CHOKE; ++slave) {
+		chan_reset(slave);		
+	}
+	
 }
 
 ////////////////////////////////////////////////////////////////
@@ -179,18 +182,38 @@ void chan_ping(byte which) {
 void chan_untrig(byte which) {
 
 	CHANNEL *this_chan = &channels[which];
-	CHANNEL *env_chan = chan_mixer_mode? &channels[0] : this_chan;
 	
-	switch(this_chan->env_phase) {
-		case ENV_ST_IDLE:
-		case ENV_ST_RELEASE:
-		case ENV_ST_ATTACK:
-		case ENV_ST_SUSTAIN:
-			this_chan->release_inc = slopes[env_chan->release_slope];		
-			this_chan->env_phase = ENV_ST_RELEASE;
-			break;
+	// ignore if a linked channel
+	if (this_chan->option == CH_OPT_LINK ||
+		this_chan->option == CH_OPT_LINK_INV) {
+		return;
 	}
-	this_chan->is_trig = 0;
+	
+	// loop through the targeted channel and subsequent channels that have
+	// triggers that are slaved to it
+	for(byte chan = which; chan < 4; ++chan) {
+	
+		this_chan = &channels[chan];
+		CHANNEL *env_chan = chan_mixer_mode? &channels[0] : this_chan;
+	
+		// when we reach the first following channel that is not a trigger
+		// slave, we can stop the search
+		if(chan > which && this_chan->option != CH_OPT_SLAVE) {
+			break;
+		}
+	
+		switch(this_chan->env_phase) {
+			case ENV_ST_IDLE:
+			case ENV_ST_RELEASE:
+			case ENV_ST_ATTACK:
+			case ENV_ST_SUSTAIN:
+				this_chan->release_inc = slopes[env_chan->release_slope];		
+				this_chan->env_phase = ENV_ST_RELEASE;
+				break;
+		}
+		
+		this_chan->is_trig = 0;
+	}
 }
 
 ////////////////////////////////////////////////////////////////
@@ -216,13 +239,21 @@ void chan_reset(byte which) {
 }
 
 ////////////////////////////////////////////////////////////////
+// RESET CYCLE COUNTS
+void chan_reset_cycle(byte which) {
+	CHANNEL *this_chan = &channels[which];
+	this_chan->trig_mask_index = 0;
+}
+
+
+////////////////////////////////////////////////////////////////
 // Once per millisecond processing... channels processed on a 
 // round-robin basis so each channel is processed once per 4ms
 void chan_tick() {
 
 	CHANNEL *this_chan = &channels[cur_chan];
 	CHANNEL *env_chan = chan_mixer_mode? &channels[0] : this_chan;
-		
+
 	long l;
 	switch(this_chan->env_phase) {
 	
@@ -274,14 +305,23 @@ void chan_tick() {
 		default:
 		case ENV_ST_IDLE:
 			break;
+	}	
+
+	// check whether this channel is linked to a lower numbered channel and 
+	// should take its level from that channel
+	for(int i=cur_chan;
+		i>0 && this_chan->option == CH_OPT_LINK || this_chan->option == CH_OPT_LINK_INV;
+		--i) {
+		this_chan = &channels[i-1];
 	}
 	
-	chan_vca(cur_chan, this_chan->env_level);
+	chan_vca(cur_chan, this_chan->env_level);		
 	
-	// prepare to move to next channel
 	if(++cur_chan >= CHAN_MAX) {
 		cur_chan =  0;
 	}
+
+	
 }
 
 
@@ -293,11 +333,13 @@ void chan_init() {
 		CHANNEL *this_chan = &channels[i];
 		memset(this_chan, 0, sizeof(CHANNEL));
 		this_chan->release_slope = SLOPE_MEDIUM;
-		this_chan->trig_mask = 0b00000001;
+		this_chan->trig_mask = 0;
 		this_chan->trig_mask_cycle = 1;	
 
 		chan_reset(i);
 	}
+	
+//channels[1].option = CH_OPT_LINK_INV;
 } 
 
 
@@ -308,19 +350,23 @@ void chan_set(byte which, byte param, int value) {
 	CHANNEL *env_chan = chan_mixer_mode? &channels[0] : this_chan;
 	switch(param) {
 		case P_ATTACK:			
-			env_chan->attack_slope = clamp(value, 0, SLOPE_MAX-1);
+			env_chan->attack_slope = clamp(value, 0, SLOPE_MAXENUM-1);
 			break;
 		case P_SUSTAIN:
 			env_chan->sustain = clamp(value, 0, 1);
 			break;
 		case P_RELEASE:
-			env_chan->release_slope = clamp(value, 0, SLOPE_MAX-1);
+			env_chan->release_slope = clamp(value, 0, SLOPE_MAXENUM-1);
+			break;
+		case P_OPTION:
+			this_chan->option = clamp(value, 0, CH_OPT_MAXENUM-1);
 			break;
 		case P_CYCLE:
-			env_chan->trig_mask_cycle = clamp(value, 1, 8);
+			this_chan->trig_mask_cycle = clamp(value, 1, 8);
 			break;
-		//case P_DENSITY:
-		//	this_chan->density = clamp(value, 0, 8);
+		case P_MASK:
+			this_chan->trig_mask = clamp(value, 0, TRIG_MASK_MAX-1);
+			break;
 	}	
 }
 
@@ -337,10 +383,12 @@ int chan_get(byte which, byte param) {
 			return env_chan->sustain;
 		case P_RELEASE:
 			return env_chan->release_slope;
+		case P_OPTION:
+			return this_chan->option;
 		case P_CYCLE:
-			return env_chan->trig_mask_cycle;
-		//case P_DENSITY:
-		//	return this_chan->density;
+			return this_chan->trig_mask_cycle;
+		case P_MASK:
+			return this_chan->trig_mask;
 	}
 	return 0;
 };

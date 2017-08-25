@@ -1,4 +1,3 @@
-////////////////////////////////////////////////////////////////
 //
 
 //
@@ -12,7 +11,7 @@
 // - INTERNAL OSC
 #pragma DATA _CONFIG1, _FOSC_INTOSC & _WDTE_OFF & _MCLRE_OFF &_CLKOUTEN_OFF
 #pragma DATA _CONFIG2, _WRT_OFF & _PLLEN_ON & _STVREN_ON & _BORV_19 & _LVP_OFF
-#pragma CLOCK_FREQ 16000000
+#pragma CLOCK_FREQ 32000000
 
 
 
@@ -38,6 +37,8 @@ RC6 / CCP4
 volatile byte led_buf[4] = {0};
 volatile byte led_timeout[8] = {0};
 volatile byte dx_buf[4] = {0};
+
+
 
 //
 // FILE SCOPE DATA
@@ -66,10 +67,22 @@ static volatile byte key_state = 0;
 static byte trig_chan = 0;
 static byte run_mode = RUN_MODE_TRIG;
 
+#define RX_BUFFER_MASK 0x1F
+volatile byte rx_buffer[32];
+volatile byte rx_head = 0; 
+volatile byte rx_tail = 0; 
+
+// State flags used while receiving MIDI data
+byte midi_status = 0;					// current MIDI message status (running status)
+byte midi_num_params = 0;				// number of parameters needed by current MIDI message
+byte midi_params[2];					// parameter values of current MIDI message
+char midi_param = 0;					// number of params currently received
+
 ////////////////////////////////////////////////////////////
 // INTERRUPT HANDLER 
 void interrupt( void )
 {
+
 	byte i;
 	////////////////////////////////////////////////////////////
 	// timer 0 rollover ISR. Maintains the count of 
@@ -100,10 +113,10 @@ void interrupt( void )
 				if(led_timeout[i]) {
 					--led_timeout[i];
 					if(led_timeout[i]) {
-						dx_buf[3] &= ~(1<<i);
+						dx_buf[3] |= (1<<i);
 					}
 					else {
-						dx_buf[3] |= (1<<i);
+						dx_buf[3] &= ~(1<<i);
 					}
 				}
 			}
@@ -237,35 +250,38 @@ void interrupt( void )
 		
 	}
 		
-/*	// serial rx ISR
+	// serial rx ISR
 	if(pir1.5)
 	{	
 		// get the byte
 		byte b = rcreg;
 		
 		// calculate next buffer head
-		byte nextHead = (rxHead + 1);
-		if(nextHead >= SZ_RXBUFFER) 
-		{
-			nextHead -= SZ_RXBUFFER;
-		}
+		byte next_rx_head = (rx_head + 1) & RX_BUFFER_MASK;
 		
 		// if buffer is not full
-		if(nextHead != rxTail)
+		if(next_rx_head != rx_tail)
 		{
 			// store the byte
-			rxBuffer[rxHead] = b;
-			rxHead = nextHead;
+			rx_buffer[rx_head] = b;
+			rx_head = next_rx_head;
 		}		
-	}*/
+//		ui_blink_led(LED_ACT);
+	}
 }
+
+
+
+// RA2 / CCP3 / P_PWM3
+// RC3 / CCP2 / P_PWM1
+// RC5 / CCP1 / P_PWM4
+// RC6 / CCP4 / P_PWM2
 
 
 
 
 ////////////////////////////////////////////////////////////
 // INITIALISE SERIAL PORT FOR MIDI
-/*
 void init_usart()
 {
 	pir1.1 = 1;		//TXIF 		
@@ -292,10 +308,9 @@ void init_usart()
 	rcsta.4 = 1;	// CREN 	continuous receive enable
 		
 	spbrgh = 0;		// brg high byte
-	spbrg = 31;		// brg low byte (31250)		
+	spbrg = 63;		// brg low byte (31250)		
 	
 }
-*/
 
 byte clamp(byte d, byte min, byte max) {
 	if(d < min) {
@@ -425,7 +440,7 @@ void run_faders_cv() {
 	for(byte i=0; i<CHAN_MAX; ++i) {
 		if(adc_cv_state[i] & ADC_CV_RESULT) {
 			adc_cv_state[i] &= ~ADC_CV_RESULT;
-			chan_vca_direct(i, adc_cv_result[i]);
+			chan_vca(i, adc_cv_result[i]<<6);
 		}
 	}
 }
@@ -514,6 +529,81 @@ void run_solo(byte *cur_chan) {
 	}
 }
 
+////////////////////////////////////////////////////////////
+// GET MESSAGES FROM MIDI INPUT
+byte midi_in()
+{
+	// loop until there is no more data or
+	// we receive a full message
+	for(;;)
+	{
+		// usart buffer overrun error?
+		if(rcsta.1)
+		{
+			rcsta.4 = 0;
+			rcsta.4 = 1;
+		}
+		
+		// check for empty receive buffer
+		if(rx_head == rx_tail)
+			return 0;
+		
+		// read the character out of buffer
+		byte ch = rx_buffer[rx_tail];
+		++rx_tail;
+		rx_tail&=RX_BUFFER_MASK;
+
+		// REALTIME MESSAGE
+		if((ch & 0xf0) == 0xf0)
+		{
+		}    
+		// STATUS BYTE
+		else if(!!(ch & 0x80))
+		{
+			midi_param = 0;
+			midi_status = ch; 
+			switch(ch & 0xF0)
+			{
+			case 0xA0: //  Aftertouch  1  key  touch  
+			case 0xC0: //  Patch change  1  instrument #   
+			case 0xD0: //  Channel Pressure  1  pressure  
+				midi_num_params = 1;
+				break;    
+			case 0x80: //  Note-off  2  key  velocity  
+			case 0x90: //  Note-on  2  key  veolcity  
+			case 0xB0: //  Continuous controller  2  controller #  controller value  
+			case 0xE0: //  Pitch bend  2  lsb (7 bits)  msb (7 bits)  
+			default:
+				midi_num_params = 2;
+				break;        
+			}
+		}    
+		else 
+		{
+			if(midi_status)
+			{
+				// gathering parameters
+				midi_params[midi_param++] = ch;
+				if(midi_param >= midi_num_params)
+				{
+					// we have a complete message.. is it one we care about?
+					midi_param = 0;
+					switch(midi_status&0xF0)
+					{
+					case 0x80: // note off
+					case 0x90: // note on
+					case 0xE0: // pitch bend
+					case 0xB0: // cc
+					case 0xD0: // aftertouch
+						return midi_status; 
+					}
+				}
+			}
+		}
+	}
+	// no message ready yet
+	return 0;
+}
 
 ////////////////////////////////////////////////////////////
 // MAIN
@@ -528,6 +618,7 @@ void main()
 	trisb = TRIS_B;
 	trisc = TRIS_C;
 
+	apfcon0.7 = 0; // RX/DT function is on RB5
 	apfcon1.0 = 0; // CCP2SEL (CCP2 function is on RC3)
 	
 	ansela = DEF_ANSELA;
@@ -629,6 +720,7 @@ void main()
 	pie1.0 = 1; // enable timer1 overflow
 	pir1.0 = 0; // clear interrupt flag
 	
+	init_usart();
 	
 	// enable interrupts	
 	intcon.7 = 1; //GIE
@@ -636,22 +728,22 @@ void main()
 		
 		
 	chan_init();
-	
 	init_display();
-		
+
+
 	// main app loop
-	unsigned int d = 0;
+	word d = 0;
 	//byte q=0;
 
 	set_run_mode(RUN_MODE_TRIG);
 	byte last_key_state = 0;
-//	vca_set(VCA1,100);
-//	for(;;) {
-//	}
-//	chan_trig(0);
 
-int q=0;
 	while(1) {
+		byte msg = midi_in();
+		if(msg) {
+			ui_blink_led(LED_ACT);
+		}
+		
 		adc_run();
 		switch(run_mode) {
 			case RUN_MODE_TRIG: 	
@@ -685,7 +777,6 @@ int q=0;
 			tick_flag = 0;
 			chan_tick();
 			ui_tick();
-			
 			//if(!q) {
 			//	q=1000;
 			//	chan_trig(3);
@@ -699,7 +790,6 @@ int q=0;
 			ui_notify(delta & key_state, key_state);
 		}
 		last_key_state = key_state;
-		
 		
 	}
 }

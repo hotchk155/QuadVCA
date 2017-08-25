@@ -12,8 +12,16 @@ enum {
 };
 #define NUM_LEDS 6
 #define LED_BLINK_TIME 2
-static byte led_2_disp[NUM_LEDS] = {LED_TRIG1, LED_TRIG2, LED_TRIG3, LED_TRIG4, LED_CLK, LED_ACT };
 
+enum {
+	LEDBIT_CLK		= 0x01,
+	LEDBIT_ACT		= 0x10,
+	LEDBIT_TRIG1	= 0x80,
+	LEDBIT_TRIG2	= 0x08,
+	LEDBIT_TRIG3	= 0x20,
+	LEDBIT_TRIG4	= 0x40
+};
+static byte led_2_disp[NUM_LEDS] = {LEDBIT_TRIG1, LEDBIT_TRIG2, LEDBIT_TRIG3, LEDBIT_TRIG4, LEDBIT_CLK, LEDBIT_ACT };
 
 
 static byte digit_2_disp[10] = {CHAR_0, CHAR_1, CHAR_2, CHAR_3, CHAR_4, CHAR_5, CHAR_6, CHAR_7, CHAR_8, CHAR_9};
@@ -128,6 +136,14 @@ static byte ui_mode_edit_chan(byte key, byte modifiers) {
 			led_buf[0] = CHAR_C;
 			led_buf[1] = CHAR_Y|SEG_DP;
 			break;
+		case P_MASK:
+			led_buf[0] = CHAR_P;
+			led_buf[1] = CHAR_T|SEG_DP;
+			break;
+		case P_OPTION:
+			led_buf[0] = CHAR_O;
+			led_buf[1] = CHAR_P|SEG_DP;
+			break;
 	}
 	value = chan_get(chan, cur_param);
 	led_buf[2] = digit_2_disp[value];
@@ -217,12 +233,12 @@ static byte ui_mode_select(byte key, byte modifiers) {
 	}
 
 	switch(get_run_mode()) {
-		case RUN_MODE_TRIG_MIX:
+		case RUN_MODE_TRIG:
 			led_buf[0] = CHAR_T;
 			led_buf[1] = CHAR_R;
 			led_buf[2] = CHAR_G;
 			break;
-		case RUN_MODE_TRIG:
+		case RUN_MODE_TRIG_MIX:
 			led_buf[0] = CHAR_T;
 			led_buf[1] = CHAR_R;
 			led_buf[2] = CHAR_2;
@@ -304,8 +320,19 @@ void ui_notify(byte key, byte modifiers) {
 }
 
 void ui_blink_led(byte which) {
+	switch(which) {
+		case LED_CHAN1: led_timeout[7] = LED_BLINK_TIME; break;
+		case LED_CHAN2: led_timeout[3] = LED_BLINK_TIME; break;
+		case LED_CHAN3: led_timeout[5] = LED_BLINK_TIME; break;
+		case LED_CHAN4: led_timeout[6] = LED_BLINK_TIME; break;
+		case LED_CLOCK: led_timeout[0] = LED_BLINK_TIME; break;
+		case LED_ACT: led_timeout[4] = LED_BLINK_TIME; break;
+	}
+	/*
 	byte x[6] = {7, 3, 5, 6, 0, 4};
-	led_timeout[x[which]] += LED_BLINK_TIME;	
+	if(x<6) {
+		led_timeout[x[which]] = LED_BLINK_TIME;	
+	}*/
 }
 
 // to be called once every 1 ms 

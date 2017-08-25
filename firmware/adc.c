@@ -1,7 +1,7 @@
 #include <system.h>
 #include "quadvca.h"
 
-unsigned int adc_cv_result[4] = {0}; // 10-bit (0-1023) ADC result for each gate
+word adc_cv_result[4] = {0}; // 10-bit (0-1023) ADC result for each gate
 byte adc_cv_state[4] = {0};
 
 static byte adc_chan = 0xFF; // current ADC channel
@@ -33,7 +33,7 @@ void adc_run()
 		}
 		else { 
 			byte *state_bits = &adc_cv_state[adc_chan];
-			unsigned int result = adresh << 8 | adresl;			
+			word result = adresh << 8 | adresl;			
 			
 			// store conversion result and indicate that a 
 			// reading is available
