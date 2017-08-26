@@ -161,11 +161,12 @@ void chan_ping(byte which) {
 				this_chan->env_max = 0xFFFF;
 				if(this_chan->attack_inc == 0xFFFF) {
 					this_chan->env_level = this_chan->env_max;
-				}
+					chan_vca(chan, this_chan->env_level);
+				}/*
 				else {
 					this_chan->env_level = 0;
-				}
-				chan_vca(chan, this_chan->env_level);
+				}*/
+				//chan_vca(chan, this_chan->env_level);
 				break;
 		}
 	}
