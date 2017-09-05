@@ -29,6 +29,8 @@ enum {
 	RUN_MODE_TRIGCV_MIX,
 	RUN_MODE_SOLOTRIG,
 	RUN_MODE_SOLOTRIG_MIX,
+	RUN_MODE_VELTRIG,
+	RUN_MODE_VELTRIG_MIX,
 	RUN_MODE_FADERSCV,
 	RUN_MODE_XFADECV,
 	RUN_MODE_STEP,
@@ -71,6 +73,7 @@ void chan_vca(byte which, word level);
 void chan_toggle(byte which);
 void chan_reset(byte which);
 void chan_reset_cycle(byte which);
+void chan_push_env(byte which, word value);
 
 void ui_notify(byte key, byte modifiers);
 void ui_tick();
@@ -151,7 +154,7 @@ enum {
 	ADC_CV_RESULT 				= 0x01,	// set whenever there is a new result for input in adc_cv_result
 	ADC_CV_HIGH					= 0x02, 
 	ADC_CV_RISING_EDGE			= 0x04, 	
-	ADC_CV_FALLING_EDGE			= 0x08
+	ADC_CV_FALLING_EDGE			= 0x08,
 };
 
 

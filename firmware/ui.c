@@ -288,6 +288,16 @@ static byte ui_mode_select(byte key, byte modifiers) {
 			led_buf[1] = CHAR_T;
 			led_buf[2] = CHAR_P;
 			break;
+		case RUN_MODE_VELTRIG:
+			led_buf[0] = CHAR_V;
+			led_buf[1] = CHAR_E;
+			led_buf[2] = CHAR_L;
+			break;
+		case RUN_MODE_VELTRIG_MIX:
+			led_buf[0] = CHAR_V;
+			led_buf[1] = CHAR_L;
+			led_buf[2] = CHAR_2;
+			break;
 	}
 	return 0;
 }

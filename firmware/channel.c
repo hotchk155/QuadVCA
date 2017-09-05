@@ -113,6 +113,23 @@ void chan_trig(byte which) {
 }
 
 ////////////////////////////////////////////////////////////////
+void chan_push_env(byte which, word value) {
+	CHANNEL *this_chan = &channels[which];	
+	
+	if (this_chan->option == CH_OPT_LINK ||
+		this_chan->option == CH_OPT_LINK_INV) {
+		return;
+	}
+	if(value > this_chan->env_level) {
+		ui_blink_led(which);	
+		this_chan->env_level = value;
+		this_chan->env_phase = ENV_ST_RELEASE;
+		this_chan->release_inc = slopes[env_chan->release_slope];		
+		chan_vca(which, this_chan->env_level);
+	}
+}
+
+////////////////////////////////////////////////////////////////
 // TRIGGER ENVELOPE ON CHANNEL
 void chan_ping(byte which) {
 
@@ -158,15 +175,12 @@ void chan_ping(byte which) {
 			case ENV_ST_SUSTAIN:
 				this_chan->env_phase = ENV_ST_ATTACK;
 				this_chan->attack_inc = slopes[env_chan->attack_slope];			
+				this_chan->release_inc = slopes[env_chan->release_slope];		
 				this_chan->env_max = 0xFFFF;
 				if(this_chan->attack_inc == 0xFFFF) {
 					this_chan->env_level = this_chan->env_max;
 					chan_vca(chan, this_chan->env_level);
-				}/*
-				else {
-					this_chan->env_level = 0;
-				}*/
-				//chan_vca(chan, this_chan->env_level);
+				}
 				break;
 		}
 	}

@@ -334,6 +334,7 @@ void set_run_mode(int mode)
 		case RUN_MODE_TOGGLE_MIX:
 		case RUN_MODE_TRIGCV_MIX:
 		case RUN_MODE_SOLOTRIG_MIX:
+		case RUN_MODE_VELTRIG_MIX:
 			chan_mixer_mode = 1;
 			break;
 		default:
@@ -431,7 +432,12 @@ void run_oneshot_step() {
 ////////////////////////////////////////////////////////////////
 // VELOCITY TRIG
 void run_oneshot_vel() {
-//TODO
+	for(byte i=0; i<CHAN_MAX; ++i) {
+		if(adc_cv_state[i] & ADC_CV_RESULT) {
+			adc_cv_state[i] &= ~ADC_CV_RESULT;
+			chan_push_env(i, adc_cv_result[i]<<6);
+		}
+	}
 }
 
 ////////////////////////////////////////////////////////////////
@@ -761,6 +767,10 @@ void main()
 			case RUN_MODE_SOLOTRIG: 
 			case RUN_MODE_SOLOTRIG_MIX: 
 				run_solo(&trig_chan); 
+				break;
+			case RUN_MODE_VELTRIG:
+			case RUN_MODE_VELTRIG_MIX:
+				run_oneshot_vel();
 				break;
 			case RUN_MODE_FADERSCV:	
 				run_faders_cv(); 
