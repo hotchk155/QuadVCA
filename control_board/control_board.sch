@@ -1859,6 +1859,25 @@ Source: www.kingbright.com</description>
 <circle x="0" y="0" radius="1.778" width="0.127" layer="21"/>
 <text x="-3.175" y="3.302" size="1.27" layer="21">&gt;NAME</text>
 </package>
+<package name="PJ301CM">
+<pad name="S" x="4.4" y="0.8" drill="2.2" diameter="4"/>
+<pad name="T" x="0" y="-4.5" drill="2.2" diameter="4"/>
+<pad name="R" x="0" y="3.3" drill="2.2" diameter="4"/>
+<circle x="0" y="0" radius="1.8" width="0.127" layer="21"/>
+<circle x="0" y="0" radius="3" width="0.127" layer="21"/>
+<wire x1="-3" y1="3" x2="3" y2="3" width="0.127" layer="21"/>
+<wire x1="-3" y1="-3" x2="3" y2="-3" width="0.127" layer="21"/>
+<wire x1="3" y1="-3" x2="3" y2="3" width="0.127" layer="21" curve="90"/>
+<wire x1="-4" y1="-5.7" x2="-4" y2="-1.4" width="0.127" layer="21"/>
+<wire x1="-4" y1="-1.4" x2="-4" y2="1.4" width="0.127" layer="21"/>
+<wire x1="-4" y1="1.4" x2="-4" y2="4.5" width="0.127" layer="21"/>
+<wire x1="4.5" y1="4.5" x2="4.5" y2="-5.7" width="0.127" layer="21"/>
+<wire x1="-4" y1="-5.7" x2="4.5" y2="-5.7" width="0.127" layer="21"/>
+<wire x1="-4" y1="4.5" x2="4.5" y2="4.5" width="0.127" layer="21"/>
+<wire x1="-3" y1="3" x2="-4" y2="1.4" width="0.127" layer="21" curve="25.709954"/>
+<wire x1="-3" y1="-3" x2="-4" y2="-1.4" width="0.127" layer="21" curve="-25.709954"/>
+<text x="-4.6" y="-3.4" size="1.27" layer="21" rot="R90">&gt;NAME</text>
+</package>
 </packages>
 <symbols>
 <symbol name="KYX2381_TRIPLE7SEG">
@@ -1946,6 +1965,16 @@ Source: www.kingbright.com</description>
 <connect gate="G$1" pin="2" pad="2"/>
 <connect gate="G$1" pin="3" pad="3"/>
 <connect gate="G$1" pin="4" pad="4"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+<device name="THONK" package="PJ301CM">
+<connects>
+<connect gate="G$1" pin="2" pad="S"/>
+<connect gate="G$1" pin="3" pad="R"/>
+<connect gate="G$1" pin="4" pad="T"/>
 </connects>
 <technologies>
 <technology name=""/>
@@ -7906,14 +7935,12 @@ NS Package M08A</description>
 <part name="IN1" library="thonkiconn" deviceset="WQP-PJ301M-12_JACK" device=""/>
 <part name="CV1" library="thonkiconn" deviceset="WQP-PJ301M-12_JACK" device=""/>
 <part name="OUT1" library="thonkiconn" deviceset="WQP-PJ301M-12_JACK" device=""/>
-<part name="CK_IN" library="thonkiconn" deviceset="WQP-PJ301M-12_JACK" device=""/>
 <part name="IN2" library="thonkiconn" deviceset="WQP-PJ301M-12_JACK" device=""/>
 <part name="CV2" library="thonkiconn" deviceset="WQP-PJ301M-12_JACK" device=""/>
 <part name="OUT2" library="thonkiconn" deviceset="WQP-PJ301M-12_JACK" device=""/>
 <part name="IN3" library="thonkiconn" deviceset="WQP-PJ301M-12_JACK" device=""/>
 <part name="CV3" library="thonkiconn" deviceset="WQP-PJ301M-12_JACK" device=""/>
 <part name="OUT3" library="thonkiconn" deviceset="WQP-PJ301M-12_JACK" device=""/>
-<part name="CK_OUT" library="thonkiconn" deviceset="WQP-PJ301M-12_JACK" device=""/>
 <part name="ATT2" library="jasons_stuff" deviceset="ALPS_POT_SMALL" device=""/>
 <part name="ATT3" library="jasons_stuff" deviceset="ALPS_POT_SMALL" device=""/>
 <part name="ATT4" library="jasons_stuff" deviceset="ALPS_POT_SMALL" device=""/>
@@ -7956,15 +7983,11 @@ NS Package M08A</description>
 <part name="CV_IN2" library="pinhead" deviceset="PINHD-1X1" device=""/>
 <part name="CV_IN3" library="pinhead" deviceset="PINHD-1X1" device=""/>
 <part name="CV_IN4" library="pinhead" deviceset="PINHD-1X1" device=""/>
-<part name="CKIN" library="pinhead" deviceset="PINHD-1X1" device=""/>
-<part name="GND2" library="supply1" deviceset="GND" device=""/>
-<part name="GND3" library="supply1" deviceset="GND" device=""/>
 <part name="MIDIIN_R" library="pinhead" deviceset="PINHD-1X1" device=""/>
 <part name="IND1" library="pinhead" deviceset="PINHD-1X1" device=""/>
 <part name="IND2" library="pinhead" deviceset="PINHD-1X1" device=""/>
 <part name="IND3" library="pinhead" deviceset="PINHD-1X1" device=""/>
 <part name="IND4" library="pinhead" deviceset="PINHD-1X1" device=""/>
-<part name="MIDI" library="jason_eagle6" deviceset="VERTICAL_3_5MM_SOCKET" device=""/>
 <part name="MIDIIN_T" library="pinhead" deviceset="PINHD-1X1" device=""/>
 <part name="SNK1" library="pinhead" deviceset="PINHD-1X1" device=""/>
 <part name="SNK2" library="pinhead" deviceset="PINHD-1X1" device=""/>
@@ -8005,10 +8028,6 @@ NS Package M08A</description>
 <part name="S6" library="jason_eagle6" deviceset="6MM_TACT" device=""/>
 <part name="S7" library="jason_eagle6" deviceset="6MM_TACT" device=""/>
 <part name="S1" library="jason_eagle6" deviceset="6MM_TACT" device=""/>
-<part name="R1" library="rcl" deviceset="R-EU_" device="R0805"/>
-<part name="R2" library="rcl" deviceset="R-EU_" device="R0805"/>
-<part name="R3" library="rcl" deviceset="R-EU_" device="R0805"/>
-<part name="R4" library="rcl" deviceset="R-EU_" device="R0805"/>
 <part name="R5" library="rcl" deviceset="R-EU_" device="R0805"/>
 <part name="R6" library="rcl" deviceset="R-EU_" device="R0805"/>
 <part name="R7" library="rcl" deviceset="R-EU_" device="R0805"/>
@@ -8028,6 +8047,8 @@ NS Package M08A</description>
 <part name="-12V" library="pinhead" deviceset="PINHD-1X1" device=""/>
 <part name="SUPPLY19" library="supply2" deviceset="+12V" device=""/>
 <part name="SUPPLY20" library="supply2" deviceset="-12V" device=""/>
+<part name="X1" library="jason_eagle6" deviceset="VERTICAL_3_5MM_SOCKET" device="THONK"/>
+<part name="DGND3" library="pinhead" deviceset="PINHD-1X1" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -8035,21 +8056,19 @@ NS Package M08A</description>
 </plain>
 <instances>
 <instance part="IN1" gate="G$1" x="22.86" y="0" rot="R90"/>
-<instance part="CV1" gate="G$1" x="30.48" y="109.22" rot="R90"/>
+<instance part="CV1" gate="G$1" x="30.48" y="96.52" rot="R90"/>
 <instance part="OUT1" gate="G$1" x="20.32" y="-116.84" rot="R90"/>
-<instance part="CK_IN" gate="G$1" x="27.94" y="58.42" rot="R90"/>
 <instance part="IN2" gate="G$1" x="43.18" y="0" rot="R90"/>
-<instance part="CV2" gate="G$1" x="40.64" y="109.22" rot="R90"/>
+<instance part="CV2" gate="G$1" x="40.64" y="96.52" rot="R90"/>
 <instance part="OUT2" gate="G$1" x="66.04" y="-116.84" rot="R90"/>
 <instance part="IN3" gate="G$1" x="63.5" y="0" rot="R90"/>
-<instance part="CV3" gate="G$1" x="50.8" y="109.22" rot="R90"/>
+<instance part="CV3" gate="G$1" x="50.8" y="96.52" rot="R90"/>
 <instance part="OUT3" gate="G$1" x="43.18" y="-116.84" rot="R90"/>
-<instance part="CK_OUT" gate="G$1" x="38.1" y="58.42" rot="R90"/>
 <instance part="ATT2" gate="G$1" x="45.72" y="-53.34"/>
 <instance part="ATT3" gate="G$1" x="73.66" y="-53.34"/>
 <instance part="ATT4" gate="G$1" x="99.06" y="-53.34"/>
 <instance part="IN4" gate="G$1" x="83.82" y="0" rot="R90"/>
-<instance part="CV4" gate="G$1" x="60.96" y="109.22" rot="R90"/>
+<instance part="CV4" gate="G$1" x="60.96" y="96.52" rot="R90"/>
 <instance part="OUT4" gate="G$1" x="86.36" y="-116.84" rot="R90"/>
 <instance part="LED_TRIG1" gate="G$1" x="101.6" y="119.38"/>
 <instance part="LED_VCA1" gate="G$1" x="104.14" y="76.2" rot="R180"/>
@@ -8087,15 +8106,11 @@ NS Package M08A</description>
 <instance part="CV_IN2" gate="G$1" x="38.1" y="73.66" rot="R270"/>
 <instance part="CV_IN3" gate="G$1" x="48.26" y="73.66" rot="R270"/>
 <instance part="CV_IN4" gate="G$1" x="58.42" y="73.66" rot="R270"/>
-<instance part="CKIN" gate="G$1" x="25.4" y="35.56" rot="R270"/>
-<instance part="GND2" gate="1" x="30.48" y="48.26"/>
-<instance part="GND3" gate="1" x="40.64" y="48.26"/>
 <instance part="MIDIIN_R" gate="G$1" x="55.88" y="35.56" rot="R270"/>
 <instance part="IND1" gate="G$1" x="104.14" y="88.9" rot="R90"/>
 <instance part="IND2" gate="G$1" x="109.22" y="88.9" rot="R90"/>
 <instance part="IND3" gate="G$1" x="114.3" y="88.9" rot="R90"/>
 <instance part="IND4" gate="G$1" x="119.38" y="88.9" rot="R90"/>
-<instance part="MIDI" gate="G$1" x="60.96" y="60.96" rot="R270"/>
 <instance part="MIDIIN_T" gate="G$1" x="66.04" y="35.56" rot="R270"/>
 <instance part="SNK1" gate="G$1" x="27.94" y="147.32" rot="R270"/>
 <instance part="SNK2" gate="G$1" x="38.1" y="147.32" rot="R270"/>
@@ -8136,10 +8151,6 @@ NS Package M08A</description>
 <instance part="S6" gate="G$1" x="165.1" y="48.26"/>
 <instance part="S7" gate="G$1" x="165.1" y="35.56"/>
 <instance part="S1" gate="G$1" x="165.1" y="22.86"/>
-<instance part="R1" gate="G$1" x="30.48" y="96.52" rot="R90"/>
-<instance part="R2" gate="G$1" x="40.64" y="96.52" rot="R90"/>
-<instance part="R3" gate="G$1" x="50.8" y="96.52" rot="R90"/>
-<instance part="R4" gate="G$1" x="60.96" y="96.52" rot="R90"/>
 <instance part="R5" gate="G$1" x="33.02" y="-7.62" rot="R180"/>
 <instance part="R6" gate="G$1" x="53.34" y="-10.16" rot="R180"/>
 <instance part="R7" gate="G$1" x="73.66" y="-7.62" rot="R180"/>
@@ -8161,6 +8172,8 @@ NS Package M08A</description>
 <instance part="-12V" gate="G$1" x="157.48" y="-88.9" rot="R90"/>
 <instance part="SUPPLY19" gate="+12V" x="147.32" y="-99.06" rot="R180"/>
 <instance part="SUPPLY20" gate="G$1" x="157.48" y="-99.06"/>
+<instance part="X1" gate="G$1" x="60.96" y="60.96" rot="R270"/>
+<instance part="DGND3" gate="G$1" x="10.16" y="121.92" rot="R270"/>
 </instances>
 <busses>
 </busses>
@@ -8337,39 +8350,6 @@ NS Package M08A</description>
 </net>
 <net name="GND" class="0">
 <segment>
-<wire x1="20.32" y1="83.82" x2="33.02" y2="83.82" width="0.1524" layer="91"/>
-<pinref part="GND1" gate="1" pin="GND"/>
-<wire x1="33.02" y1="83.82" x2="43.18" y2="83.82" width="0.1524" layer="91"/>
-<wire x1="43.18" y1="83.82" x2="53.34" y2="83.82" width="0.1524" layer="91"/>
-<wire x1="53.34" y1="83.82" x2="63.5" y2="83.82" width="0.1524" layer="91"/>
-<wire x1="20.32" y1="83.82" x2="20.32" y2="81.28" width="0.1524" layer="91"/>
-<pinref part="CV4" gate="G$1" pin="1"/>
-<wire x1="63.5" y1="83.82" x2="63.5" y2="104.14" width="0.1524" layer="91"/>
-<pinref part="CV3" gate="G$1" pin="1"/>
-<wire x1="53.34" y1="104.14" x2="53.34" y2="83.82" width="0.1524" layer="91"/>
-<junction x="53.34" y="83.82"/>
-<pinref part="CV2" gate="G$1" pin="1"/>
-<wire x1="43.18" y1="104.14" x2="43.18" y2="83.82" width="0.1524" layer="91"/>
-<junction x="43.18" y="83.82"/>
-<pinref part="CV1" gate="G$1" pin="1"/>
-<wire x1="33.02" y1="104.14" x2="33.02" y2="83.82" width="0.1524" layer="91"/>
-<junction x="33.02" y="83.82"/>
-</segment>
-<segment>
-<pinref part="GND2" gate="1" pin="GND"/>
-<pinref part="CK_IN" gate="G$1" pin="1"/>
-<wire x1="30.48" y1="50.8" x2="30.48" y2="53.34" width="0.1524" layer="91"/>
-<pinref part="CK_IN" gate="G$1" pin="3"/>
-<wire x1="30.48" y1="50.8" x2="27.94" y2="50.8" width="0.1524" layer="91"/>
-<wire x1="27.94" y1="50.8" x2="27.94" y2="53.34" width="0.1524" layer="91"/>
-<junction x="30.48" y="50.8"/>
-</segment>
-<segment>
-<pinref part="GND3" gate="1" pin="GND"/>
-<pinref part="CK_OUT" gate="G$1" pin="1"/>
-<wire x1="40.64" y1="50.8" x2="40.64" y2="53.34" width="0.1524" layer="91"/>
-</segment>
-<segment>
 <pinref part="DGND1" gate="G$1" pin="1"/>
 <wire x1="-10.16" y1="124.46" x2="-10.16" y2="132.08" width="0.1524" layer="91"/>
 <wire x1="-10.16" y1="132.08" x2="0" y2="132.08" width="0.1524" layer="91"/>
@@ -8379,6 +8359,10 @@ NS Package M08A</description>
 <wire x1="-10.16" y1="132.08" x2="-20.32" y2="132.08" width="0.1524" layer="91"/>
 <wire x1="-20.32" y1="132.08" x2="-20.32" y2="121.92" width="0.1524" layer="91"/>
 <junction x="-10.16" y="132.08"/>
+<pinref part="DGND3" gate="G$1" pin="1"/>
+<wire x1="0" y1="132.08" x2="10.16" y2="132.08" width="0.1524" layer="91"/>
+<wire x1="10.16" y1="132.08" x2="10.16" y2="124.46" width="0.1524" layer="91"/>
+<junction x="0" y="132.08"/>
 </segment>
 <segment>
 <pinref part="GND4" gate="1" pin="GND"/>
@@ -8390,17 +8374,40 @@ NS Package M08A</description>
 <wire x1="152.4" y1="22.86" x2="157.48" y2="22.86" width="0.1524" layer="91"/>
 <junction x="152.4" y="22.86"/>
 </segment>
-</net>
-<net name="N$17" class="0">
 <segment>
-<pinref part="CK_IN" gate="G$1" pin="2"/>
-<pinref part="CKIN" gate="G$1" pin="1"/>
-<wire x1="25.4" y1="53.34" x2="25.4" y2="43.18" width="0.1524" layer="91"/>
-<pinref part="CK_OUT" gate="G$1" pin="2"/>
-<wire x1="25.4" y1="43.18" x2="25.4" y2="38.1" width="0.1524" layer="91"/>
-<wire x1="25.4" y1="43.18" x2="35.56" y2="43.18" width="0.1524" layer="91"/>
-<wire x1="35.56" y1="43.18" x2="35.56" y2="53.34" width="0.1524" layer="91"/>
-<junction x="25.4" y="43.18"/>
+<pinref part="CV1" gate="G$1" pin="3"/>
+<wire x1="30.48" y1="91.44" x2="30.48" y2="83.82" width="0.1524" layer="91"/>
+<wire x1="20.32" y1="83.82" x2="30.48" y2="83.82" width="0.1524" layer="91"/>
+<pinref part="GND1" gate="1" pin="GND"/>
+<wire x1="30.48" y1="83.82" x2="33.02" y2="83.82" width="0.1524" layer="91"/>
+<wire x1="33.02" y1="83.82" x2="40.64" y2="83.82" width="0.1524" layer="91"/>
+<wire x1="40.64" y1="83.82" x2="43.18" y2="83.82" width="0.1524" layer="91"/>
+<wire x1="43.18" y1="83.82" x2="50.8" y2="83.82" width="0.1524" layer="91"/>
+<wire x1="50.8" y1="83.82" x2="53.34" y2="83.82" width="0.1524" layer="91"/>
+<wire x1="53.34" y1="83.82" x2="60.96" y2="83.82" width="0.1524" layer="91"/>
+<wire x1="60.96" y1="83.82" x2="63.5" y2="83.82" width="0.1524" layer="91"/>
+<wire x1="20.32" y1="83.82" x2="20.32" y2="81.28" width="0.1524" layer="91"/>
+<pinref part="CV4" gate="G$1" pin="1"/>
+<wire x1="63.5" y1="83.82" x2="63.5" y2="91.44" width="0.1524" layer="91"/>
+<pinref part="CV3" gate="G$1" pin="1"/>
+<wire x1="53.34" y1="91.44" x2="53.34" y2="83.82" width="0.1524" layer="91"/>
+<junction x="53.34" y="83.82"/>
+<pinref part="CV2" gate="G$1" pin="1"/>
+<wire x1="43.18" y1="91.44" x2="43.18" y2="83.82" width="0.1524" layer="91"/>
+<junction x="43.18" y="83.82"/>
+<pinref part="CV1" gate="G$1" pin="1"/>
+<wire x1="33.02" y1="91.44" x2="33.02" y2="83.82" width="0.1524" layer="91"/>
+<junction x="33.02" y="83.82"/>
+<junction x="30.48" y="83.82"/>
+<pinref part="CV2" gate="G$1" pin="3"/>
+<wire x1="40.64" y1="91.44" x2="40.64" y2="83.82" width="0.1524" layer="91"/>
+<junction x="40.64" y="83.82"/>
+<pinref part="CV3" gate="G$1" pin="3"/>
+<wire x1="50.8" y1="91.44" x2="50.8" y2="83.82" width="0.1524" layer="91"/>
+<junction x="50.8" y="83.82"/>
+<pinref part="CV4" gate="G$1" pin="3"/>
+<wire x1="60.96" y1="91.44" x2="60.96" y2="83.82" width="0.1524" layer="91"/>
+<junction x="60.96" y="83.82"/>
 </segment>
 </net>
 <net name="SINK4" class="0">
@@ -8737,18 +8744,20 @@ NS Package M08A</description>
 <segment>
 <pinref part="MIDIIN_R" gate="G$1" pin="1"/>
 <wire x1="55.88" y1="38.1" x2="55.88" y2="45.72" width="0.1524" layer="91"/>
-<pinref part="MIDI" gate="G$1" pin="3"/>
 <wire x1="55.88" y1="45.72" x2="58.42" y2="45.72" width="0.1524" layer="91"/>
 <wire x1="58.42" y1="45.72" x2="58.42" y2="50.8" width="0.1524" layer="91"/>
+<pinref part="X1" gate="G$1" pin="3"/>
+<junction x="58.42" y="50.8"/>
 </segment>
 </net>
 <net name="N$20" class="0">
 <segment>
-<pinref part="MIDI" gate="G$1" pin="4"/>
 <wire x1="60.96" y1="50.8" x2="60.96" y2="45.72" width="0.1524" layer="91"/>
 <pinref part="MIDIIN_T" gate="G$1" pin="1"/>
 <wire x1="60.96" y1="45.72" x2="66.04" y2="45.72" width="0.1524" layer="91"/>
 <wire x1="66.04" y1="45.72" x2="66.04" y2="38.1" width="0.1524" layer="91"/>
+<pinref part="X1" gate="G$1" pin="4"/>
+<junction x="60.96" y="50.8"/>
 </segment>
 </net>
 <net name="N$21" class="0">
@@ -8853,78 +8862,31 @@ NS Package M08A</description>
 <segment>
 <pinref part="CV1" gate="G$1" pin="2"/>
 <pinref part="CV_IN1" gate="G$1" pin="1"/>
-<wire x1="27.94" y1="104.14" x2="27.94" y2="76.2" width="0.1524" layer="91"/>
+<wire x1="27.94" y1="91.44" x2="27.94" y2="76.2" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$14" class="0">
 <segment>
 <pinref part="CV2" gate="G$1" pin="2"/>
 <pinref part="CV_IN2" gate="G$1" pin="1"/>
-<wire x1="38.1" y1="104.14" x2="38.1" y2="76.2" width="0.1524" layer="91"/>
+<wire x1="38.1" y1="91.44" x2="38.1" y2="76.2" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$15" class="0">
 <segment>
 <pinref part="CV3" gate="G$1" pin="2"/>
 <pinref part="CV_IN3" gate="G$1" pin="1"/>
-<wire x1="48.26" y1="104.14" x2="48.26" y2="76.2" width="0.1524" layer="91"/>
+<wire x1="48.26" y1="91.44" x2="48.26" y2="76.2" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$16" class="0">
 <segment>
 <pinref part="CV4" gate="G$1" pin="2"/>
 <pinref part="CV_IN4" gate="G$1" pin="1"/>
-<wire x1="58.42" y1="104.14" x2="58.42" y2="76.2" width="0.1524" layer="91"/>
-</segment>
-</net>
-<net name="N$29" class="0">
-<segment>
-<pinref part="R1" gate="G$1" pin="2"/>
-<pinref part="CV1" gate="G$1" pin="3"/>
-<wire x1="30.48" y1="101.6" x2="30.48" y2="104.14" width="0.1524" layer="91"/>
-</segment>
-</net>
-<net name="N$30" class="0">
-<segment>
-<pinref part="R2" gate="G$1" pin="2"/>
-<pinref part="CV2" gate="G$1" pin="3"/>
-<wire x1="40.64" y1="101.6" x2="40.64" y2="104.14" width="0.1524" layer="91"/>
-</segment>
-</net>
-<net name="N$31" class="0">
-<segment>
-<pinref part="R3" gate="G$1" pin="2"/>
-<pinref part="CV3" gate="G$1" pin="3"/>
-<wire x1="50.8" y1="101.6" x2="50.8" y2="104.14" width="0.1524" layer="91"/>
-</segment>
-</net>
-<net name="N$32" class="0">
-<segment>
-<pinref part="R4" gate="G$1" pin="2"/>
-<pinref part="CV4" gate="G$1" pin="3"/>
-<wire x1="60.96" y1="101.6" x2="60.96" y2="104.14" width="0.1524" layer="91"/>
+<wire x1="58.42" y1="91.44" x2="58.42" y2="76.2" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="+5V" class="0">
-<segment>
-<pinref part="R1" gate="G$1" pin="1"/>
-<wire x1="30.48" y1="91.44" x2="30.48" y2="88.9" width="0.1524" layer="91"/>
-<pinref part="R2" gate="G$1" pin="1"/>
-<wire x1="30.48" y1="88.9" x2="40.64" y2="88.9" width="0.1524" layer="91"/>
-<wire x1="40.64" y1="88.9" x2="40.64" y2="91.44" width="0.1524" layer="91"/>
-<pinref part="R3" gate="G$1" pin="1"/>
-<wire x1="40.64" y1="88.9" x2="50.8" y2="88.9" width="0.1524" layer="91"/>
-<wire x1="50.8" y1="88.9" x2="50.8" y2="91.44" width="0.1524" layer="91"/>
-<junction x="40.64" y="88.9"/>
-<pinref part="R4" gate="G$1" pin="1"/>
-<wire x1="50.8" y1="88.9" x2="60.96" y2="88.9" width="0.1524" layer="91"/>
-<wire x1="60.96" y1="88.9" x2="60.96" y2="91.44" width="0.1524" layer="91"/>
-<junction x="50.8" y="88.9"/>
-<wire x1="60.96" y1="88.9" x2="73.66" y2="88.9" width="0.1524" layer="91"/>
-<wire x1="73.66" y1="88.9" x2="73.66" y2="111.76" width="0.1524" layer="91"/>
-<junction x="60.96" y="88.9"/>
-<label x="73.66" y="109.22" size="1.778" layer="95"/>
-</segment>
 <segment>
 <pinref part="LED_VCA1" gate="G$1" pin="A"/>
 <wire x1="104.14" y1="73.66" x2="104.14" y2="66.04" width="0.1524" layer="91"/>
@@ -9100,6 +9062,77 @@ NS Package M08A</description>
 </nets>
 </sheet>
 </sheets>
+<errors>
+<approved hash="104,1,149.86,-147.32,IC1P,V+,+12V,,,"/>
+<approved hash="104,1,149.86,-162.56,IC1P,V-,-12V,,,"/>
+<approved hash="113,1,101.922,119.627,LED_TRIG1,,,,,"/>
+<approved hash="113,1,103.818,76.3772,LED_VCA1,,,,,"/>
+<approved hash="113,1,107.002,119.627,LED_TRIG2,,,,,"/>
+<approved hash="113,1,108.898,76.3772,LED_VCA2,,,,,"/>
+<approved hash="113,1,112.082,119.627,LED_TRIG3,,,,,"/>
+<approved hash="113,1,113.978,76.3772,LED_VCA3,,,,,"/>
+<approved hash="113,1,117.162,119.627,LED_TRIG4,,,,,"/>
+<approved hash="113,1,119.058,76.3772,LED_VCA4,,,,,"/>
+<approved hash="113,1,122.242,118.11,LED9,,,,,"/>
+<approved hash="113,1,127.322,118.11,LED10,,,,,"/>
+<approved hash="113,1,18.9188,-36.9115,ATT_IN1,,,,,"/>
+<approved hash="113,1,44.3188,-36.9115,ATT_IN2,,,,,"/>
+<approved hash="113,1,72.2588,-36.9115,ATT_IN3,,,,,"/>
+<approved hash="113,1,97.6588,-36.9115,ATT_IN4,,,,,"/>
+<approved hash="113,1,21.7212,-18.8525,SIG_IN1,,,,,"/>
+<approved hash="113,1,42.0412,-18.8525,SIG_IN2,,,,,"/>
+<approved hash="113,1,62.3612,-18.8525,SIG_IN3,,,,,"/>
+<approved hash="113,1,82.6812,-18.8525,SIG_IN4,,,,,"/>
+<approved hash="113,1,151.261,-10.7371,AGND3,,,,,"/>
+<approved hash="113,1,161.421,-10.7371,AGND4,,,,,"/>
+<approved hash="113,1,29.3412,75.5515,CV_IN1,,,,,"/>
+<approved hash="113,1,39.5012,75.5515,CV_IN2,,,,,"/>
+<approved hash="113,1,49.6612,75.5515,CV_IN3,,,,,"/>
+<approved hash="113,1,59.8212,75.5515,CV_IN4,,,,,"/>
+<approved hash="113,1,57.2812,36.3269,MIDIIN_R,,,,,"/>
+<approved hash="113,1,102.739,86.5971,IND1,,,,,"/>
+<approved hash="113,1,107.819,86.5971,IND2,,,,,"/>
+<approved hash="113,1,112.899,86.5971,IND3,,,,,"/>
+<approved hash="113,1,117.979,86.5971,IND4,,,,,"/>
+<approved hash="113,1,67.4412,36.4697,MIDIIN_T,,,,,"/>
+<approved hash="113,1,29.3412,149.623,SNK1,,,,,"/>
+<approved hash="113,1,39.5012,149.623,SNK2,,,,,"/>
+<approved hash="113,1,49.6612,149.623,SNK3,,,,,"/>
+<approved hash="113,1,59.8212,149.623,SNK4,,,,,"/>
+<approved hash="113,1,69.9812,149.623,SNK5,,,,,"/>
+<approved hash="113,1,80.1412,149.623,SNK6,,,,,"/>
+<approved hash="113,1,90.3012,149.623,SNK7,,,,,"/>
+<approved hash="113,1,100.461,149.623,SNK8,,,,,"/>
+<approved hash="113,1,128.401,149.623,SRC1,,,,,"/>
+<approved hash="113,1,138.561,149.623,SRC2,,,,,"/>
+<approved hash="113,1,148.721,149.623,SRC3,,,,,"/>
+<approved hash="113,1,158.881,149.623,SRC4,,,,,"/>
+<approved hash="113,1,174.121,147.377,SW_READ,,,,,"/>
+<approved hash="113,1,-8.75877,123.812,DGND1,,,,,"/>
+<approved hash="113,1,1.40123,123.812,DGND2,,,,,"/>
+<approved hash="113,1,128.139,86.5971,+5V,,,,,"/>
+<approved hash="113,1,189.361,148.654,SWITCH,,,,,"/>
+<approved hash="113,1,29.0788,-35.4968,ATT_OUT1,,,,,"/>
+<approved hash="113,1,82.4188,-35.4968,ATT_OUT3,,,,,"/>
+<approved hash="113,1,54.4788,-35.4968,ATT_OUT2,,,,,"/>
+<approved hash="113,1,107.819,-35.4968,ATT_OUT4,,,,,"/>
+<approved hash="113,1,19.1812,-165.047,SIG_OUT1,,,,,"/>
+<approved hash="113,1,42.0412,-165.047,SIG_OUT3,,,,,"/>
+<approved hash="113,1,64.9012,-165.047,SIG_OUT2,,,,,"/>
+<approved hash="113,1,85.2212,-165.047,SIG_OUT4,,,,,"/>
+<approved hash="113,1,33.02,-8.61483,R5,,,,,"/>
+<approved hash="113,1,53.34,-11.1548,R6,,,,,"/>
+<approved hash="113,1,73.66,-8.61483,R7,,,,,"/>
+<approved hash="113,1,30.48,-131.085,R8,,,,,"/>
+<approved hash="113,1,53.34,-136.165,R10,,,,,"/>
+<approved hash="113,1,76.2,-141.245,R9,,,,,"/>
+<approved hash="113,1,96.52,-146.325,R11,,,,,"/>
+<approved hash="113,1,161.29,-143.109,C1,,,,,"/>
+<approved hash="113,1,161.29,-165.969,C2,,,,,"/>
+<approved hash="113,1,145.919,-91.2029,+12V,,,,,"/>
+<approved hash="113,1,156.079,-91.2029,-12V,,,,,"/>
+<approved hash="113,1,11.5612,123.812,DGND3,,,,,"/>
+</errors>
 </schematic>
 </drawing>
 </eagle>

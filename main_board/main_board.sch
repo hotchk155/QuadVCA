@@ -15849,24 +15849,6 @@ Siemens, Hewlett-Packard, Texas Instuments, Sharp, Motorola&lt;p&gt;
 <text x="-2.8018" y="-2.075" size="1" layer="21">&gt;NAME</text>
 <rectangle x1="-0.6818" y1="-0.635" x2="-0.0018" y2="0.615" layer="21"/>
 </package>
-<package name="DO-VERT">
-<description>&lt;B&gt;DIODE&lt;/B&gt;&lt;p&gt;
-diameter 2.54 mm, horizontal, grid 10.16 mm</description>
-<wire x1="2.667" y1="-1.27" x2="1.27" y2="-1.27" width="0.1524" layer="21"/>
-<wire x1="1.27" y1="-1.27" x2="-1.397" y2="-1.27" width="0.1524" layer="21"/>
-<wire x1="-1.397" y1="1.27" x2="1.27" y2="1.27" width="0.1524" layer="21"/>
-<wire x1="1.27" y1="1.27" x2="2.667" y2="1.27" width="0.1524" layer="21"/>
-<wire x1="-0.635" y1="0" x2="0.508" y2="0" width="0.1524" layer="21"/>
-<wire x1="1.27" y1="1.27" x2="1.27" y2="-1.27" width="0.1524" layer="21"/>
-<wire x1="1.27" y1="-1.27" x2="0.508" y2="0" width="0.1524" layer="21"/>
-<wire x1="0.508" y1="0" x2="1.524" y2="0" width="0.1524" layer="21"/>
-<wire x1="0.508" y1="0" x2="1.27" y2="1.27" width="0.1524" layer="21"/>
-<pad name="A" x="2.54" y="0" drill="1.1176"/>
-<pad name="C" x="-1.27" y="0" drill="1.1176"/>
-<text x="-2.032" y="1.651" size="1.27" layer="25" ratio="10">&gt;NAME</text>
-<text x="-2.032" y="-2.794" size="1.27" layer="27" ratio="10">&gt;VALUE</text>
-<rectangle x1="-0.127" y1="-1.27" x2="0.508" y2="1.27" layer="21"/>
-</package>
 </packages>
 <symbols>
 <symbol name="DIODE">
@@ -15877,17 +15859,6 @@ diameter 2.54 mm, horizontal, grid 10.16 mm</description>
 <wire x1="0" y1="-1.27" x2="1.016" y2="-1.27" width="0.254" layer="94"/>
 <pin name="P$1" x="0" y="-4.572" length="short" rot="R90"/>
 <pin name="P$2" x="0" y="0.508" length="short" rot="R270"/>
-</symbol>
-<symbol name="D">
-<wire x1="-1.27" y1="-1.27" x2="1.27" y2="0" width="0.254" layer="94"/>
-<wire x1="1.27" y1="0" x2="-1.27" y2="1.27" width="0.254" layer="94"/>
-<wire x1="1.27" y1="1.27" x2="1.27" y2="0" width="0.254" layer="94"/>
-<wire x1="-1.27" y1="1.27" x2="-1.27" y2="-1.27" width="0.254" layer="94"/>
-<wire x1="1.27" y1="0" x2="1.27" y2="-1.27" width="0.254" layer="94"/>
-<text x="2.54" y="0.4826" size="1.778" layer="95">&gt;NAME</text>
-<text x="2.54" y="-2.3114" size="1.778" layer="96">&gt;VALUE</text>
-<pin name="A" x="-2.54" y="0" visible="off" length="short" direction="pas"/>
-<pin name="C" x="2.54" y="0" visible="off" length="short" direction="pas" rot="R180"/>
 </symbol>
 </symbols>
 <devicesets>
@@ -15900,24 +15871,6 @@ diameter 2.54 mm, horizontal, grid 10.16 mm</description>
 <connects>
 <connect gate="G$1" pin="P$1" pad="C"/>
 <connect gate="G$1" pin="P$2" pad="A"/>
-</connects>
-<technologies>
-<technology name=""/>
-</technologies>
-</device>
-</devices>
-</deviceset>
-<deviceset name="1N4004" prefix="D">
-<description>&lt;B&gt;DIODE&lt;/B&gt;&lt;p&gt;
-general purpose rectifier, 1 A</description>
-<gates>
-<gate name="1" symbol="D" x="0" y="0"/>
-</gates>
-<devices>
-<device name="" package="DO-VERT">
-<connects>
-<connect gate="1" pin="A" pad="A"/>
-<connect gate="1" pin="C" pad="C"/>
 </connects>
 <technologies>
 <technology name=""/>
@@ -16286,6 +16239,68 @@ Copyright: Würth Elektronik eiSos</description>
 </deviceset>
 </devicesets>
 </library>
+<library name="diode">
+<description>&lt;b&gt;Diodes&lt;/b&gt;&lt;p&gt;
+Based on the following sources:
+&lt;ul&gt;
+&lt;li&gt;Motorola : www.onsemi.com
+&lt;li&gt;Fairchild : www.fairchildsemi.com
+&lt;li&gt;Philips : www.semiconductors.com
+&lt;li&gt;Vishay : www.vishay.de
+&lt;/ul&gt;
+&lt;author&gt;Created by librarian@cadsoft.de&lt;/author&gt;</description>
+<packages>
+<package name="SOD123">
+<description>&lt;b&gt;Diode&lt;/b&gt;</description>
+<wire x1="-1.1" y1="0.7" x2="1.1" y2="0.7" width="0.254" layer="51"/>
+<wire x1="1.1" y1="0.7" x2="1.1" y2="-0.7" width="0.254" layer="51"/>
+<wire x1="1.1" y1="-0.7" x2="-1.1" y2="-0.7" width="0.254" layer="51"/>
+<wire x1="-1.1" y1="-0.7" x2="-1.1" y2="0.7" width="0.254" layer="51"/>
+<smd name="C" x="-1.9" y="0" dx="1.4" dy="1.4" layer="1"/>
+<smd name="A" x="1.9" y="0" dx="1.4" dy="1.4" layer="1"/>
+<text x="-1.1" y="1" size="1.27" layer="25">&gt;NAME</text>
+<text x="-1.1" y="-2.3" size="1.27" layer="27">&gt;VALUE</text>
+<rectangle x1="-1.95" y1="-0.45" x2="-1.2" y2="0.4" layer="51"/>
+<rectangle x1="1.2" y1="-0.45" x2="1.95" y2="0.4" layer="51"/>
+<rectangle x1="-1.05" y1="-0.65" x2="-0.15" y2="0.7" layer="51"/>
+</package>
+</packages>
+<symbols>
+<symbol name="D">
+<wire x1="-1.27" y1="-1.27" x2="1.27" y2="0" width="0.254" layer="94"/>
+<wire x1="1.27" y1="0" x2="-1.27" y2="1.27" width="0.254" layer="94"/>
+<wire x1="1.27" y1="1.27" x2="1.27" y2="0" width="0.254" layer="94"/>
+<wire x1="-1.27" y1="1.27" x2="-1.27" y2="-1.27" width="0.254" layer="94"/>
+<wire x1="1.27" y1="0" x2="1.27" y2="-1.27" width="0.254" layer="94"/>
+<text x="2.54" y="0.4826" size="1.778" layer="95">&gt;NAME</text>
+<text x="2.54" y="-2.3114" size="1.778" layer="96">&gt;VALUE</text>
+<pin name="A" x="-2.54" y="0" visible="off" length="short" direction="pas"/>
+<pin name="C" x="2.54" y="0" visible="off" length="short" direction="pas" rot="R180"/>
+<text x="-2.54" y="0" size="0.4064" layer="99" align="center">SpiceOrder 1</text>
+<text x="2.54" y="0" size="0.4064" layer="99" align="center">SpiceOrder 2</text>
+</symbol>
+</symbols>
+<devicesets>
+<deviceset name="MBR0520LT" prefix="D">
+<description>&lt;b&gt;SCHOTTKY BARRIER RECTIFIER&lt;/b&gt;&lt;p&gt;
+Source: http://onsemi.com .. MBR0520LT1-D.pdf</description>
+<gates>
+<gate name="G$1" symbol="D" x="0" y="0"/>
+</gates>
+<devices>
+<device name="" package="SOD123">
+<connects>
+<connect gate="G$1" pin="A" pad="A"/>
+<connect gate="G$1" pin="C" pad="C"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+</devices>
+</deviceset>
+</devicesets>
+</library>
 </libraries>
 <attributes>
 </attributes>
@@ -16534,8 +16549,6 @@ Copyright: Würth Elektronik eiSos</description>
 <part name="SUPPLY63" library="supply2" deviceset="AGND" device=""/>
 <part name="F1" library="microbuilder" deviceset="PTC" device="1210"/>
 <part name="F2" library="microbuilder" deviceset="PTC" device="1210"/>
-<part name="D15" library="jasons_stuff" deviceset="1N4004" device=""/>
-<part name="D16" library="jasons_stuff" deviceset="1N4004" device=""/>
 <part name="L1" library="wuerth-elektronik" deviceset="WE-CBF" device="_0805"/>
 <part name="L2" library="wuerth-elektronik" deviceset="WE-CBF" device="_0805"/>
 <part name="D13" library="jasons_stuff" deviceset="0805DIODE" device=""/>
@@ -16546,6 +16559,8 @@ Copyright: Würth Elektronik eiSos</description>
 <part name="D20" library="jasons_stuff" deviceset="0805DIODE" device=""/>
 <part name="D21" library="jasons_stuff" deviceset="0805DIODE" device=""/>
 <part name="D22" library="jasons_stuff" deviceset="0805DIODE" device=""/>
+<part name="D15" library="diode" deviceset="MBR0520LT" device=""/>
+<part name="D16" library="diode" deviceset="MBR0520LT" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -16815,8 +16830,6 @@ AMPLIFIER</text>
 <instance part="SUPPLY63" gate="G$1" x="121.92" y="71.12"/>
 <instance part="F1" gate="G$1" x="27.94" y="284.48"/>
 <instance part="F2" gate="G$1" x="27.94" y="264.16"/>
-<instance part="D15" gate="1" x="17.78" y="279.4" rot="R90"/>
-<instance part="D16" gate="1" x="17.78" y="269.24" rot="R90"/>
 <instance part="L1" gate="G$1" x="5.08" y="281.94"/>
 <instance part="L2" gate="G$1" x="5.08" y="261.62"/>
 <instance part="D13" gate="G$1" x="-22.86" y="109.22"/>
@@ -16827,6 +16840,12 @@ AMPLIFIER</text>
 <instance part="D20" gate="G$1" x="15.24" y="109.22"/>
 <instance part="D21" gate="G$1" x="22.86" y="109.22"/>
 <instance part="D22" gate="G$1" x="30.48" y="109.22"/>
+<instance part="D15" gate="G$1" x="17.78" y="279.4" smashed="yes" rot="R90">
+<attribute name="NAME" x="17.2974" y="281.94" size="1.778" layer="95" rot="R90"/>
+</instance>
+<instance part="D16" gate="G$1" x="17.78" y="269.24" smashed="yes" rot="R90">
+<attribute name="NAME" x="17.2974" y="271.78" size="1.778" layer="95" rot="R90"/>
+</instance>
 </instances>
 <busses>
 </busses>
@@ -17323,17 +17342,17 @@ AMPLIFIER</text>
 <pinref part="C23" gate="G$1" pin="+"/>
 <wire x1="-15.24" y1="276.86" x2="-15.24" y2="274.32" width="0.1524" layer="91"/>
 <wire x1="-15.24" y1="274.32" x2="-15.24" y2="271.78" width="0.1524" layer="91"/>
-<wire x1="40.64" y1="274.32" x2="17.78" y2="274.32" width="0.1524" layer="91"/>
 <junction x="-15.24" y="274.32"/>
 <pinref part="SUPPLY35" gate="G$1" pin="AGND"/>
+<wire x1="40.64" y1="274.32" x2="17.78" y2="274.32" width="0.1524" layer="91"/>
 <wire x1="17.78" y1="274.32" x2="-15.24" y2="274.32" width="0.1524" layer="91"/>
 <wire x1="-15.24" y1="274.32" x2="-20.32" y2="274.32" width="0.1524" layer="91"/>
 <wire x1="-20.32" y1="274.32" x2="-20.32" y2="271.78" width="0.1524" layer="91"/>
-<pinref part="D15" gate="1" pin="A"/>
-<wire x1="17.78" y1="276.86" x2="17.78" y2="274.32" width="0.1524" layer="91"/>
+<pinref part="D16" gate="G$1" pin="C"/>
+<wire x1="17.78" y1="271.78" x2="17.78" y2="274.32" width="0.1524" layer="91"/>
 <junction x="17.78" y="274.32"/>
-<pinref part="D16" gate="1" pin="C"/>
-<wire x1="17.78" y1="274.32" x2="17.78" y2="271.78" width="0.1524" layer="91"/>
+<pinref part="D15" gate="G$1" pin="A"/>
+<wire x1="17.78" y1="274.32" x2="17.78" y2="276.86" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="R31" gate="G$1" pin="1"/>
@@ -18657,23 +18676,23 @@ AMPLIFIER</text>
 <net name="N$32" class="0">
 <segment>
 <pinref part="F1" gate="G$1" pin="2"/>
-<pinref part="D15" gate="1" pin="C"/>
+<wire x1="10.16" y1="284.48" x2="17.78" y2="284.48" width="0.1524" layer="91"/>
+<pinref part="L1" gate="G$1" pin="2"/>
+<pinref part="D15" gate="G$1" pin="C"/>
 <wire x1="17.78" y1="284.48" x2="22.86" y2="284.48" width="0.1524" layer="91"/>
 <wire x1="17.78" y1="281.94" x2="17.78" y2="284.48" width="0.1524" layer="91"/>
 <junction x="17.78" y="284.48"/>
-<wire x1="10.16" y1="284.48" x2="17.78" y2="284.48" width="0.1524" layer="91"/>
-<pinref part="L1" gate="G$1" pin="2"/>
 </segment>
 </net>
 <net name="N$35" class="0">
 <segment>
 <pinref part="F2" gate="G$1" pin="2"/>
-<pinref part="D16" gate="1" pin="A"/>
+<wire x1="10.16" y1="264.16" x2="17.78" y2="264.16" width="0.1524" layer="91"/>
+<pinref part="L2" gate="G$1" pin="2"/>
+<pinref part="D16" gate="G$1" pin="A"/>
 <wire x1="17.78" y1="264.16" x2="22.86" y2="264.16" width="0.1524" layer="91"/>
 <wire x1="17.78" y1="266.7" x2="17.78" y2="264.16" width="0.1524" layer="91"/>
 <junction x="17.78" y="264.16"/>
-<wire x1="10.16" y1="264.16" x2="17.78" y2="264.16" width="0.1524" layer="91"/>
-<pinref part="L2" gate="G$1" pin="2"/>
 </segment>
 </net>
 <net name="N$9" class="0">
