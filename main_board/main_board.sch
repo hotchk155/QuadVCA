@@ -16470,10 +16470,6 @@ Source: http://onsemi.com .. MBR0520LT1-D.pdf</description>
 <part name="D5" library="microbuilder" deviceset="DIODE" device="SOD-123"/>
 <part name="SUPPLY30" library="supply2" deviceset="+5V" device=""/>
 <part name="GND15" library="supply1" deviceset="GND" device=""/>
-<part name="CLOCKIN" library="pinhead" deviceset="PINHD-1X1" device=""/>
-<part name="R14" library="rcl" deviceset="R-EU_" device="R0805"/>
-<part name="D1" library="microbuilder" deviceset="DIODE" device="SOD-123"/>
-<part name="D6" library="microbuilder" deviceset="DIODE" device="SOD-123"/>
 <part name="SWITCH" library="pinhead" deviceset="PINHD-1X1" device=""/>
 <part name="IC8" library="burr-brown" deviceset="REG1117" device=""/>
 <part name="GND18" library="supply1" deviceset="GND" device=""/>
@@ -16514,7 +16510,6 @@ Source: http://onsemi.com .. MBR0520LT1-D.pdf</description>
 <part name="R7" library="rcl" deviceset="R-EU_" device="R0805"/>
 <part name="R8" library="rcl" deviceset="R-EU_" device="R0805"/>
 <part name="R9" library="rcl" deviceset="R-EU_" device="R0805"/>
-<part name="R5" library="rcl" deviceset="R-EU_" device="R0805"/>
 <part name="GND16" library="supply1" deviceset="GND" device=""/>
 <part name="C19" library="rcl" deviceset="C-EU" device="C0805"/>
 <part name="C6" library="rcl" deviceset="C-EU" device="C0805"/>
@@ -16561,6 +16556,7 @@ Source: http://onsemi.com .. MBR0520LT1-D.pdf</description>
 <part name="D22" library="jasons_stuff" deviceset="0805DIODE" device=""/>
 <part name="D15" library="diode" deviceset="MBR0520LT" device=""/>
 <part name="D16" library="diode" deviceset="MBR0520LT" device=""/>
+<part name="GND1" library="pinhead" deviceset="PINHD-1X1" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -16751,10 +16747,6 @@ AMPLIFIER</text>
 <instance part="D5" gate="G$1" x="-109.22" y="35.56"/>
 <instance part="SUPPLY30" gate="+5V" x="-93.98" y="76.2"/>
 <instance part="GND15" gate="1" x="-114.3" y="2.54"/>
-<instance part="CLOCKIN" gate="G$1" x="-137.16" y="27.94" rot="R180"/>
-<instance part="R14" gate="G$1" x="-121.92" y="27.94"/>
-<instance part="D1" gate="G$1" x="-109.22" y="25.4"/>
-<instance part="D6" gate="G$1" x="-99.06" y="30.48"/>
 <instance part="SWITCH" gate="G$1" x="58.42" y="20.32" rot="R270"/>
 <instance part="IC8" gate="G$1" x="-91.44" y="279.4"/>
 <instance part="GND18" gate="1" x="-91.44" y="261.62"/>
@@ -16788,14 +16780,13 @@ AMPLIFIER</text>
 <instance part="SUPPLY40" gate="G$1" x="88.9" y="27.94"/>
 <instance part="GND21" gate="G$1" x="48.26" y="152.4" rot="R180"/>
 <instance part="GND22" gate="G$1" x="48.26" y="142.24" rot="R180"/>
-<instance part="GND25" gate="1" x="58.42" y="132.08"/>
+<instance part="GND25" gate="1" x="58.42" y="119.38"/>
 <instance part="+5V" gate="G$1" x="48.26" y="162.56" rot="R180"/>
 <instance part="SUPPLY41" gate="+5V" x="58.42" y="167.64"/>
 <instance part="R6" gate="G$1" x="-86.36" y="17.78" rot="R90"/>
 <instance part="R7" gate="G$1" x="-83.82" y="17.78" rot="R90"/>
 <instance part="R8" gate="G$1" x="-81.28" y="17.78" rot="R90"/>
 <instance part="R9" gate="G$1" x="-78.74" y="17.78" rot="R90"/>
-<instance part="R5" gate="G$1" x="-76.2" y="17.78" rot="R90"/>
 <instance part="GND16" gate="1" x="-86.36" y="2.54"/>
 <instance part="C19" gate="G$1" x="96.52" y="167.64" rot="R180"/>
 <instance part="C6" gate="G$1" x="81.28" y="167.64" rot="R180"/>
@@ -16846,6 +16837,7 @@ AMPLIFIER</text>
 <instance part="D16" gate="G$1" x="17.78" y="269.24" smashed="yes" rot="R90">
 <attribute name="NAME" x="17.2974" y="271.78" size="1.778" layer="95" rot="R90"/>
 </instance>
+<instance part="GND1" gate="G$1" x="48.26" y="132.08" rot="R180"/>
 </instances>
 <busses>
 </busses>
@@ -17122,10 +17114,6 @@ AMPLIFIER</text>
 <pinref part="SUPPLY30" gate="+5V" pin="+5V"/>
 <wire x1="-93.98" y1="73.66" x2="-93.98" y2="71.12" width="0.1524" layer="91"/>
 <junction x="-93.98" y="71.12"/>
-<pinref part="D6" gate="G$1" pin="C"/>
-<wire x1="-96.52" y1="30.48" x2="-93.98" y2="30.48" width="0.1524" layer="91"/>
-<wire x1="-93.98" y1="30.48" x2="-93.98" y2="40.64" width="0.1524" layer="91"/>
-<junction x="-93.98" y="40.64"/>
 </segment>
 <segment>
 <pinref part="IC8" gate="G$1" pin="VOUT"/>
@@ -18042,10 +18030,9 @@ AMPLIFIER</text>
 <junction x="-60.96" y="116.84"/>
 </segment>
 <segment>
-<wire x1="-114.3" y1="5.08" x2="-114.3" y2="25.4" width="0.1524" layer="91"/>
+<wire x1="-114.3" y1="5.08" x2="-114.3" y2="35.56" width="0.1524" layer="91"/>
 <pinref part="GND15" gate="1" pin="GND"/>
 <pinref part="D2" gate="G$1" pin="A"/>
-<wire x1="-114.3" y1="25.4" x2="-114.3" y2="35.56" width="0.1524" layer="91"/>
 <wire x1="-114.3" y1="35.56" x2="-114.3" y2="45.72" width="0.1524" layer="91"/>
 <wire x1="-114.3" y1="45.72" x2="-114.3" y2="55.88" width="0.1524" layer="91"/>
 <wire x1="-114.3" y1="55.88" x2="-114.3" y2="66.04" width="0.1524" layer="91"/>
@@ -18059,9 +18046,6 @@ AMPLIFIER</text>
 <pinref part="D5" gate="G$1" pin="A"/>
 <wire x1="-111.76" y1="35.56" x2="-114.3" y2="35.56" width="0.1524" layer="91"/>
 <junction x="-114.3" y="35.56"/>
-<pinref part="D1" gate="G$1" pin="A"/>
-<wire x1="-111.76" y1="25.4" x2="-114.3" y2="25.4" width="0.1524" layer="91"/>
-<junction x="-114.3" y="25.4"/>
 </segment>
 <segment>
 <pinref part="GND18" gate="1" pin="GND"/>
@@ -18097,10 +18081,14 @@ AMPLIFIER</text>
 <wire x1="50.8" y1="152.4" x2="58.42" y2="152.4" width="0.1524" layer="91"/>
 <wire x1="58.42" y1="152.4" x2="58.42" y2="142.24" width="0.1524" layer="91"/>
 <pinref part="GND22" gate="G$1" pin="1"/>
-<wire x1="58.42" y1="142.24" x2="58.42" y2="134.62" width="0.1524" layer="91"/>
+<wire x1="58.42" y1="142.24" x2="58.42" y2="132.08" width="0.1524" layer="91"/>
+<wire x1="58.42" y1="132.08" x2="58.42" y2="121.92" width="0.1524" layer="91"/>
 <wire x1="50.8" y1="142.24" x2="58.42" y2="142.24" width="0.1524" layer="91"/>
 <junction x="58.42" y="142.24"/>
 <pinref part="GND25" gate="1" pin="GND"/>
+<pinref part="GND1" gate="G$1" pin="1"/>
+<wire x1="50.8" y1="132.08" x2="58.42" y2="132.08" width="0.1524" layer="91"/>
+<junction x="58.42" y="132.08"/>
 </segment>
 <segment>
 <pinref part="R6" gate="G$1" pin="1"/>
@@ -18119,10 +18107,6 @@ AMPLIFIER</text>
 <wire x1="-81.28" y1="10.16" x2="-78.74" y2="10.16" width="0.1524" layer="91"/>
 <wire x1="-78.74" y1="10.16" x2="-78.74" y2="12.7" width="0.1524" layer="91"/>
 <junction x="-81.28" y="10.16"/>
-<pinref part="R5" gate="G$1" pin="1"/>
-<wire x1="-78.74" y1="10.16" x2="-76.2" y2="10.16" width="0.1524" layer="91"/>
-<wire x1="-76.2" y1="10.16" x2="-76.2" y2="12.7" width="0.1524" layer="91"/>
-<junction x="-78.74" y="10.16"/>
 </segment>
 </net>
 <net name="PWM1" class="0">
@@ -18431,13 +18415,6 @@ AMPLIFIER</text>
 <wire x1="-134.62" y1="38.1" x2="-127" y2="38.1" width="0.1524" layer="91"/>
 </segment>
 </net>
-<net name="N$74" class="0">
-<segment>
-<pinref part="CLOCKIN" gate="G$1" pin="1"/>
-<pinref part="R14" gate="G$1" pin="1"/>
-<wire x1="-134.62" y1="27.94" x2="-127" y2="27.94" width="0.1524" layer="91"/>
-</segment>
-</net>
 <net name="SWITCH" class="0">
 <segment>
 <pinref part="SWITCH" gate="G$1" pin="1"/>
@@ -18646,23 +18623,6 @@ AMPLIFIER</text>
 </net>
 <net name="CKIN" class="0">
 <segment>
-<pinref part="R14" gate="G$1" pin="2"/>
-<wire x1="-116.84" y1="27.94" x2="-104.14" y2="27.94" width="0.1524" layer="91"/>
-<wire x1="-104.14" y1="25.4" x2="-104.14" y2="27.94" width="0.1524" layer="91"/>
-<junction x="-104.14" y="27.94"/>
-<wire x1="-104.14" y1="27.94" x2="-104.14" y2="30.48" width="0.1524" layer="91"/>
-<pinref part="D6" gate="G$1" pin="A"/>
-<wire x1="-104.14" y1="30.48" x2="-101.6" y2="30.48" width="0.1524" layer="91"/>
-<label x="-66.04" y="27.94" size="1.778" layer="95"/>
-<wire x1="-104.14" y1="27.94" x2="-76.2" y2="27.94" width="0.1524" layer="91"/>
-<pinref part="R5" gate="G$1" pin="2"/>
-<wire x1="-76.2" y1="27.94" x2="-60.96" y2="27.94" width="0.1524" layer="91"/>
-<wire x1="-76.2" y1="22.86" x2="-76.2" y2="27.94" width="0.1524" layer="91"/>
-<junction x="-76.2" y="27.94"/>
-<pinref part="D1" gate="G$1" pin="C"/>
-<wire x1="-106.68" y1="25.4" x2="-104.14" y2="25.4" width="0.1524" layer="91"/>
-</segment>
-<segment>
 <pinref part="IC3" gate="G$1" pin="RA0"/>
 <pinref part="ICSP" gate="G$1" pin="ICSP_DAT/PGD"/>
 <wire x1="15.24" y1="223.52" x2="33.02" y2="223.52" width="0.1524" layer="91"/>
@@ -18822,8 +18782,8 @@ AMPLIFIER</text>
 <approved hash="104,1,-93.98,210.82,IC2P,V-,GND,,,"/>
 <approved hash="104,1,139.7,63.5,IC5P,V+,+12V,,,"/>
 <approved hash="104,1,139.7,48.26,IC5P,V-,-12V,,,"/>
-<approved hash="104,1,53.34,228.6,J1,VDD,+5V,,,"/>
-<approved hash="104,1,53.34,226.06,J1,VSS(GND),GND,,,"/>
+<approved hash="104,1,53.34,228.6,ICSP,VDD,+5V,,,"/>
+<approved hash="104,1,53.34,226.06,ICSP,VSS(GND),GND,,,"/>
 <approved hash="208,1,27.94,58.42,+5V,sup,,,,"/>
 <approved hash="208,1,-93.98,241.3,+5V,sup,,,,"/>
 <approved hash="208,1,-15.24,162.56,+5V,sup,,,,"/>
@@ -18834,14 +18794,14 @@ AMPLIFIER</text>
 <approved hash="208,1,-71.12,281.94,+5V,sup,,,,"/>
 <approved hash="208,1,10.16,177.8,+5V,sup,,,,"/>
 <approved hash="208,1,58.42,165.1,+5V,sup,,,,"/>
-<approved hash="113,1,31.8812,108.983,SINK1,,,,,"/>
-<approved hash="113,1,24.2612,108.983,SINK2,,,,,"/>
-<approved hash="113,1,16.6412,108.983,SINK3,,,,,"/>
-<approved hash="113,1,9.02123,108.983,SINK4,,,,,"/>
-<approved hash="113,1,1.40123,108.983,SINK5,,,,,"/>
-<approved hash="113,1,-6.21877,108.983,SINK6,,,,,"/>
-<approved hash="113,1,-13.8388,108.983,SINK7,,,,,"/>
-<approved hash="113,1,-21.4588,108.983,SINK8,,,,,"/>
+<approved hash="113,1,31.8812,96.2829,SINK1,,,,,"/>
+<approved hash="113,1,24.2612,96.2829,SINK2,,,,,"/>
+<approved hash="113,1,16.6412,96.2829,SINK3,,,,,"/>
+<approved hash="113,1,9.02123,96.2829,SINK4,,,,,"/>
+<approved hash="113,1,1.40123,96.2829,SINK5,,,,,"/>
+<approved hash="113,1,-6.21877,96.2829,SINK6,,,,,"/>
+<approved hash="113,1,-13.8388,96.2829,SINK7,,,,,"/>
+<approved hash="113,1,-21.4588,96.2829,SINK8,,,,,"/>
 <approved hash="113,1,-23.4865,38.3963,Q3,,,,,"/>
 <approved hash="113,1,-8.24653,38.3963,Q2,,,,,"/>
 <approved hash="113,1,6.99347,38.3963,Q1,,,,,"/>
@@ -18926,7 +18886,7 @@ AMPLIFIER</text>
 <approved hash="113,1,-60.7229,158.881,IND4,,,,,"/>
 <approved hash="113,1,293.095,35.56,R42,,,,,"/>
 <approved hash="113,1,1.27,232.009,C2,,,,,"/>
-<approved hash="113,1,62.0395,224.79,J1,,,,,"/>
+<approved hash="113,1,62.0395,224.79,ICSP,,,,,"/>
 <approved hash="113,1,-116.84,127.995,R29,,,,,"/>
 <approved hash="113,1,-128.595,125.599,MIDI_IN+,,,,,"/>
 <approved hash="113,1,-128.278,115.439,MIDI_IN-,,,,,"/>
@@ -18945,21 +18905,17 @@ AMPLIFIER</text>
 <approved hash="113,1,-99.06,62.1369,D8,,,,,"/>
 <approved hash="113,1,-99.06,51.9769,D9,,,,,"/>
 <approved hash="113,1,-99.06,41.8169,D10,,,,,"/>
-<approved hash="113,1,-109.22,64.8631,D2,,,,,"/>
-<approved hash="113,1,-109.22,54.7031,D3,,,,,"/>
-<approved hash="113,1,-109.22,44.5431,D4,,,,,"/>
-<approved hash="113,1,-109.22,34.3831,D5,,,,,"/>
-<approved hash="113,1,-136.469,26.5388,CLOCKIN,,,,,"/>
-<approved hash="113,1,-121.92,28.9348,R14,,,,,"/>
-<approved hash="113,1,-109.22,24.2231,D1,,,,,"/>
-<approved hash="113,1,-99.06,31.6569,D6,,,,,"/>
+<approved hash="113,1,-109.22,67.2169,D2,,,,,"/>
+<approved hash="113,1,-109.22,57.0569,D3,,,,,"/>
+<approved hash="113,1,-109.22,46.8969,D4,,,,,"/>
+<approved hash="113,1,-109.22,36.7369,D5,,,,,"/>
 <approved hash="113,1,59.8212,21.6537,SWITCH,,,,,"/>
-<approved hash="113,1,-68.2044,273.05,XC20,,,,,"/>
+<approved hash="113,1,-69.0524,273.05,C24,,,,,"/>
 <approved hash="113,1,-108.351,273.05,C3,,,,,"/>
 <approved hash="113,1,-78.5809,273.05,R25,,,,,"/>
-<approved hash="113,1,52.0277,275.721,JP1,,,,,"/>
-<approved hash="113,1,-12.3244,280.67,XC24,,,,,"/>
-<approved hash="113,1,-12.3244,267.97,XC25,,,,,"/>
+<approved hash="113,1,52.0277,275.721,POWER,,,,,"/>
+<approved hash="113,1,-13.1724,280.67,C22,,,,,"/>
+<approved hash="113,1,-13.1724,267.97,C23,,,,,"/>
 <approved hash="113,1,-43.18,278.405,R31,,,,,"/>
 <approved hash="113,1,151.522,217.301,TO_ATT1,,,,,"/>
 <approved hash="113,1,209.942,217.301,TO_ATT2,,,,,"/>
@@ -18969,9 +18925,7 @@ AMPLIFIER</text>
 <approved hash="113,1,160.948,168.779,FR_ATT2,,,,,"/>
 <approved hash="113,1,219.368,168.779,FR_ATT3,,,,,"/>
 <approved hash="113,1,277.788,168.779,FR_ATT4,,,,,"/>
-<approved hash="113,1,78.1629,67.1788,AGND1,,,,,"/>
-<approved hash="113,1,78.1629,57.0188,AGND2,,,,,"/>
-<approved hash="113,1,78.1629,46.8588,AGND3,,,,,"/>
+<approved hash="113,1,78.1629,44.3188,AGND2,,,,,"/>
 <approved hash="113,1,78.1629,34.1588,AGND4,,,,,"/>
 <approved hash="113,1,50.3613,150.999,GND21,,,,,"/>
 <approved hash="113,1,50.3613,140.839,GND22,,,,,"/>
@@ -18980,15 +18934,18 @@ AMPLIFIER</text>
 <approved hash="113,1,-84.8148,17.78,R7,,,,,"/>
 <approved hash="113,1,-82.2748,17.78,R8,,,,,"/>
 <approved hash="113,1,-79.7348,17.78,R9,,,,,"/>
-<approved hash="113,1,-77.1948,17.78,R5,,,,,"/>
-<approved hash="113,1,91.5991,168.91,C19,,,,,"/>
-<approved hash="113,1,84.6887,168.91,C6,,,,,"/>
-<approved hash="113,1,17.78,285.411,F1,,,,,"/>
-<approved hash="113,1,17.78,265.091,F2,,,,,"/>
-<approved hash="113,1,-2.54,285.411,L1,,,,,"/>
-<approved hash="113,1,-2.54,265.091,L2,,,,,"/>
-<approved hash="113,1,7.13317,279.876,D13,,,,,"/>
-<approved hash="113,1,7.13317,269.716,D14,,,,,"/>
+<approved hash="113,1,94.1391,168.91,C19,,,,,"/>
+<approved hash="113,1,79.6087,168.91,C6,,,,,"/>
+<approved hash="113,1,271.543,130.679,+12V,,,,,"/>
+<approved hash="113,1,287.257,123.321,-12V,,,,,"/>
+<approved hash="113,1,86.5191,168.91,C25,,,,,"/>
+<approved hash="113,1,71.2791,168.91,C26,,,,,"/>
+<approved hash="113,1,124.301,80.01,C27,,,,,"/>
+<approved hash="113,1,27.94,286.292,F1,,,,,"/>
+<approved hash="113,1,27.94,265.972,F2,,,,,"/>
+<approved hash="113,1,5.08,285.411,L1,,,,,"/>
+<approved hash="113,1,5.08,265.091,L2,,,,,"/>
+<approved hash="113,1,50.5629,130.679,GND1,,,,,"/>
 </errors>
 </schematic>
 </drawing>
